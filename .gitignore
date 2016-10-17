@@ -1,4 +1,9 @@
 .metadata/
+.project
+.settings/
+.classpath
 NetworkingP2PJavaServer/.project
 NetworkingP2PJavaServer/.settings/
 NetworkingP2PJavaServer/.classpath
+.idea/
+*.iml
