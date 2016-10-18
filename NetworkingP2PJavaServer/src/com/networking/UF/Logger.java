@@ -68,6 +68,22 @@ public class Logger {
 	}
 
 	/**
+	 * Checks whether or not the required config files, Common.cfg and PeerInfo.cfg, exist in the current working directory
+	 * Called once at the start of the program
+	 * @return boolean True if they exist, and false otherwise
+	 * @throw IOException
+	 */
+	public static boolean confirmConfigFilesExist() throws IOException {
+		boolean commonExists = new File(currentDirectoryPath, "Common.cfg").exists();
+		boolean peerInfoExists = new File(currentDirectoryPath, "PeerInfo.cfg").exists();
+		if (commonExists && peerInfoExists) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Write to the log file that was created in initializeDirectories().
 	 * Used by all logging methods.
 	 * @param message
