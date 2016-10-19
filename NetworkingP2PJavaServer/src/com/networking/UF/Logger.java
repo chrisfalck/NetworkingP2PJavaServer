@@ -1,9 +1,7 @@
 package com.networking.UF;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,20 +15,9 @@ import com.google.common.io.Files;
  * @author Chris Falck
  */
 public class Logger {
+	
+	static FileManager fileManager = FileManager.getInstance();
 
-	/** Directory the jar is run from is established as the project root. */
-	private static String currentDirectoryPath = Paths.get(".").toAbsolutePath().normalize().toString();
-	
-	/** This Peer's int identifier. */
-	private static Integer thisPeerIdentifier = null;
-
-	/** File where all logs are appended. */
-	private static File thisPeerLogFile = null;
-	
-	/** Directory where all non-log files are placed. */
-	private static File thisPeerFileDirectory = null;
-	
-	/** Singleton instance. */
 	private static Logger instance = null;
 
 	/** Make sure the class can't be instantiated by external objects. */
@@ -49,41 +36,6 @@ public class Logger {
 	}
 
 	/**
-	 * Creates all directories and files that will be used throughout the life of the program.
-	 * Called once at the start of the program.
-	 * @param thisPeerId The id of this peer. Used to initialize static variables and direcotory/file names.
-	 * @throws IOException
-	 */
-	public static void initializeDirectoriesAndFiles(Integer thisPeerId) throws IOException {
-		thisPeerIdentifier = thisPeerId;
-		// Create a directory at {currentDir}/peer_{peerId}/
-		// This directory will hold this peer's non-logging files.
-		thisPeerFileDirectory = new File(currentDirectoryPath + File.separator + "peer_" + thisPeerIdentifier.toString());
-		File tempFile = new File(thisPeerFileDirectory.getAbsolutePath() + "/tmp.txt");
-		Files.createParentDirs(tempFile);
-
-		// Create an empty log file to hold all log messages.
-		thisPeerLogFile = new File(currentDirectoryPath + File.separator + "peer_" + thisPeerIdentifier.toString() + ".log");
-		Files.touch(thisPeerLogFile);
-	}
-
-	/**
-	 * Checks whether or not the required config files, Common.cfg and PeerInfo.cfg, exist in the current working directory
-	 * Called once at the start of the program
-	 * @return boolean True if they exist, and false otherwise
-	 * @throw IOException
-	 */
-	public static boolean confirmConfigFilesExist() throws IOException {
-		boolean commonExists = new File(currentDirectoryPath, "Common.cfg").exists();
-		boolean peerInfoExists = new File(currentDirectoryPath, "PeerInfo.cfg").exists();
-		if (commonExists && peerInfoExists) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
 	 * Write to the log file that was created in initializeDirectories().
 	 * Used by all logging methods.
 	 * @param message
@@ -94,9 +46,9 @@ public class Logger {
 		Date currentTime = new Date();
 		String messageWithTimestamp = "\n\n[" + dateFormat.format(currentTime) + "]: " + message + ".";
 		try {
-			Files.append(messageWithTimestamp, thisPeerLogFile, Charset.defaultCharset());
+			Files.append(messageWithTimestamp, fileManager.getThisPeerLogFile(), Charset.defaultCharset());
 		} catch (IOException exception) {
-			System.err.println("Could not append " + thisPeerLogFile.getAbsolutePath() + " with " + messageWithTimestamp);
+			System.err.println("Could not append " + fileManager.getThisPeerIdentifier() + " with " + messageWithTimestamp);
 		}
 	}
 	
@@ -108,9 +60,9 @@ public class Logger {
 		String message = "";
 	
 		if (direction.toLowerCase().equals("outgoing")) {
-			message = "Peer " + thisPeerIdentifier.toString() + " makes a connection to Peer " + peerTwoId.toString();
+			message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " makes a connection to Peer " + peerTwoId.toString();
 		} else if (direction.toLowerCase().equals("incoming")) {
-			message = "Peer " + thisPeerIdentifier.toString() + " is connected from Peer " + peerTwoId.toString();
+			message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " is connected from Peer " + peerTwoId.toString();
 		} else {
 			System.err.println("Invalid TCP connectin direction: " + direction);
 		}
@@ -142,7 +94,7 @@ public class Logger {
 	public static void logChangeOfPreferredNeighbors(List<Integer> preferredNeighborIds) {
 		String preferredNeighborsString = stringifyPreferredNeighbors(preferredNeighborIds);
 		
-		String message = "Peer " + thisPeerIdentifier.toString() + " has the preferred neighbors" + preferredNeighborsString;
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " has the preferred neighbors" + preferredNeighborsString;
 		
 		writeToLogFile(message);
 	}
@@ -152,7 +104,7 @@ public class Logger {
 	 * @param unchokedNeighborId
 	 */
 	public static void logChangeOfOptimisticallyUnchokedNeighbor(Integer optimisticallyUnchokedNeighborId) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " has the optimistically unchoked neighbor " + optimisticallyUnchokedNeighborId.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " has the optimistically unchoked neighbor " + optimisticallyUnchokedNeighborId.toString();
 		writeToLogFile(message);
 	}
 	
@@ -161,7 +113,7 @@ public class Logger {
 	 * @param peerTwoId
 	 */
 	public static void logUnchokingEvent(Integer peerTwoId) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " is unchoked by Peer " + peerTwoId.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " is unchoked by Peer " + peerTwoId.toString();
 		writeToLogFile(message);
 	}
 	
@@ -170,7 +122,7 @@ public class Logger {
 	 * @param peerTwoId
 	 */
 	public static void logChokingEvent(Integer peerTwoId) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " is choked by Peer " + peerTwoId.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " is choked by Peer " + peerTwoId.toString();
 		writeToLogFile(message);
 	}
 	
@@ -180,7 +132,7 @@ public class Logger {
 	 * @param pieceIndex
 	 */
 	public static void logReceiptOfHaveMessage(Integer peerTwoId, Integer pieceIndex) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " received the 'have' message from Peer " + peerTwoId.toString() + " for the piece " + pieceIndex.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " received the 'have' message from Peer " + peerTwoId.toString() + " for the piece " + pieceIndex.toString();
 		writeToLogFile(message);
 	}
 	
@@ -189,7 +141,7 @@ public class Logger {
 	 * @param peerTwoId
 	 */
 	public static void logReceiptOfInterestedMessage(Integer peerTwoId) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " received the 'interested' message from Peer " + peerTwoId.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " received the 'interested' message from Peer " + peerTwoId.toString();
 		writeToLogFile(message);
 	}
 	
@@ -198,7 +150,7 @@ public class Logger {
 	 * @param peerTwoId
 	 */
 	public static void logReceiptOfNotInterestedMessage(Integer peerTwoId) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " received the 'not interested' message from Peer " + peerTwoId.toString();
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " received the 'not interested' message from Peer " + peerTwoId.toString();
 		writeToLogFile(message);
 	}
 	
@@ -209,7 +161,7 @@ public class Logger {
 	 * @param currentNumberOfPieces
 	 */
 	public static void logPieceFullyDownloaded(Integer peerTwoId, Integer pieceIndex, Integer currentNumberOfPieces) {
-		String message = "Peer " + thisPeerIdentifier.toString() + " has downloaded the piece " + pieceIndex.toString() + " from Peer " + peerTwoId.toString() + "." +
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " has downloaded the piece " + pieceIndex.toString() + " from Peer " + peerTwoId.toString() + "." +
 						 "\nNow the number of pieces it has is " + currentNumberOfPieces.toString();
 		writeToLogFile(message);
 	}
@@ -218,7 +170,7 @@ public class Logger {
 	 * Log the full download of a file by this peer.
 	 */
 	public static void logFileFullyDownloaded() {
-		String message = "Peer " + thisPeerIdentifier.toString() + " has downloaded the complete file";
+		String message = "Peer " + fileManager.getThisPeerIdentifier().toString() + " has downloaded the complete file";
 		writeToLogFile(message);
 	}
 	

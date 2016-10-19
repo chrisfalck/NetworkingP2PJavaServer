@@ -4,6 +4,7 @@ import com.networking.UF.client.Client;
 import com.networking.UF.server.Server;
 import com.networking.UF.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -23,29 +24,12 @@ public class Peer {
     private Client client;
     private Server server;
     private Protocol protocol;
-    private Logger logger;
-
-
+    private static Logger logger = Logger.getInstance();
+    private static FileManager fileManager = FileManager.getInstance();
 
     public Peer(int peerId) {
         this.peerId = peerId;
         this.logger = logger.getInstance();
-    }
-
-    /**
-     * Uses the logger to initialize files and directories used throughout the life of the program
-     * @returns boolean True if initialization successful, false otherwise
-     * @throws IOException
-     */
-    public boolean initialize() throws IOException {
-
-        logger.initializeDirectoriesAndFiles(peerId);
-
-        if ( logger.confirmConfigFilesExist() ) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /** Accessor methods */
