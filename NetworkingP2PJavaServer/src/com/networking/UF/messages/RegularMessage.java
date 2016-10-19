@@ -3,7 +3,7 @@ package com.networking.UF.messages;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 
-public class RegularMessage {
+public class RegularMessage implements Message {
     private int messageLength;
     private int messageType;
     private byte[] messagePayload;
@@ -15,7 +15,7 @@ public class RegularMessage {
     }
 
     public byte[] toByteArray() {
-        byte[] messageLengthBytes = Ints.toByteArray();
+        byte[] messageLengthBytes = Ints.toByteArray(messageLength);
 
         return Bytes.concat(messageLengthBytes, Ints.toByteArray(messageType), messagePayload);
     }

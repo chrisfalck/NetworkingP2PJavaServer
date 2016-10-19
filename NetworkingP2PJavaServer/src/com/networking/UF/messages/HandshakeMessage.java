@@ -4,7 +4,8 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Bytes;
 import com.networking.UF.*;
 
-public class HandshakeMessage {
+/** */
+public class HandshakeMessage implements Message {
 	private String handshakeHeader = "P2PFILESHARINGPROJ";
 	byte[] zeroBytes = new byte[10];
 	int peerId = 0;
