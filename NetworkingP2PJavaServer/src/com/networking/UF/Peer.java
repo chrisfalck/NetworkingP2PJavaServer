@@ -29,7 +29,6 @@ public class Peer {
 
     public Peer(int peerId) {
         this.peerId = peerId;
-        this.logger = logger.getInstance();
     }
 
     /** Accessor methods */
