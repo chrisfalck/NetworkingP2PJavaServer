@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
 public class Client {
 	Socket requestSocket;           //socket connect to the server
 	ObjectOutputStream out;         //stream write to the socket
- 	ObjectInputStream in;          //stream read from the socket
+	ObjectInputStream in;          //stream read from the socket
 	String message;                //message send to the server
 	String MESSAGE;                //capitalized message read from the server
 
@@ -28,7 +28,7 @@ public class Client {
 			out = new ObjectOutputStream(requestSocket.getOutputStream());
 			out.flush();
 			in = new ObjectInputStream(requestSocket.getInputStream());
-			
+
 			//get Input from standard input
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 			while(true)
@@ -45,11 +45,11 @@ public class Client {
 			}
 		}
 		catch (ConnectException e) {
-    			System.err.println("Connection refused. You need to initiate a server first.");
-		} 
+			System.err.println("Connection refused. You need to initiate a server first.");
+		}
 		catch ( ClassNotFoundException e ) {
-            		System.err.println("Class not found");
-        	} 
+			System.err.println("Class not found");
+		}
 		catch(UnknownHostException unknownHost){
 			System.err.println("You are trying to connect to an unknown host!");
 		}

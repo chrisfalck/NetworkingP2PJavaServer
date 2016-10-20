@@ -4,3 +4,4 @@
 /src/META_INF/
 /target
 *.class
+names.dat

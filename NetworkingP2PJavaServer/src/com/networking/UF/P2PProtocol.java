@@ -1,7 +1,11 @@
 package com.networking.UF;
 
 import com.networking.UF.handlers.*;
+import com.networking.UF.messages.Message;
 
+/**
+ * The Peer2Peer Protocol's primary responsibility is to
+ */
 public class P2PProtocol implements Protocol {
 
     private MessageHandler chokeMessageHandler;
@@ -13,9 +17,9 @@ public class P2PProtocol implements Protocol {
     private MessageHandler requestMessageHandler;
     private MessageHandler pieceMessageHandler;
 
-    public void receiveMessage(String message) {}
-    public void sendMessage(String message) {}
+    private MessageHandler handshakeMessageHandler;
 
+    /** Initialize with all the necessary message handlers */
     public P2PProtocol() {
         this.chokeMessageHandler = new chokeMessageHandler();
         this.unchokeMessageHandler = new unchokeMessageHandler();
@@ -25,8 +29,10 @@ public class P2PProtocol implements Protocol {
         this.bitfieldMessageHandler = new bitfieldMessageHandler();
         this.requestMessageHandler = new RequestMessageHandler();
         this.pieceMessageHandler = new pieceMessageHandler();
+        this.handshakeMessageHandler = new HandshakeMessageHandler();
     }
 
-
+    public void receiveMessage(Message message) {}
+    public void sendMessage(Message message) {}
 
 }
