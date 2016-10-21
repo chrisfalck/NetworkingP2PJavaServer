@@ -15,7 +15,7 @@ public class peerProcess {
             System.out.println("A peer ID must be provided as an argument. Exiting...");
             System.exit(0);
         }
-        
+
         //TODO
         // Check that peerId matches one from PeerList.cfg
 

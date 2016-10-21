@@ -43,7 +43,7 @@ public class Logger {
 	 * @param message
 	 * @throws IOException
 	 */
-	private static void writeToLogFile(String message) {
+	public static void writeToLogFile(String message) { //TODO change back to private
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
 		Date currentTime = new Date();
 		String messageWithTimestamp = "\n\n[" + dateFormat.format(currentTime) + "]: " + message + ".";
