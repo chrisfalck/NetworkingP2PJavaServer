@@ -1,5 +1,8 @@
 package com.networking.UF.client;
 
+import com.networking.UF.Logger;
+import com.networking.UF.Peer;
+
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
@@ -16,7 +19,7 @@ public class MyClient {
     int nRead = 0;
     int total = 0;
 
-    public void MyClient() {}
+    public MyClient() {}
 
     void run()
     {
@@ -24,10 +27,15 @@ public class MyClient {
             //create a socket to connect to the server
             requestSocket = new Socket("localhost", 8000);
             System.out.println("Connected to localhost in port 8000");
+
             //initialize inputStream and outputStream
             out = requestSocket.getOutputStream();
             out.flush();
             in = requestSocket.getInputStream();
+
+            //handshake
+
+
             //initialize fileInputStream
             fout = new FileOutputStream("xfer_names.dat");
 

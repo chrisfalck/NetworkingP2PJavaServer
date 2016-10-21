@@ -26,6 +26,6 @@ public class peerProcess {
 		fileManager.initializeDirectoriesAndFiles(peerId);
 
         Peer peer = new Peer(peerId);
-        
+        peer.initialize();
     }
 }

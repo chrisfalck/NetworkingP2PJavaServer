@@ -1,5 +1,7 @@
 package com.networking.UF.server;
 
+import com.networking.UF.Peer;
+
 import java.io.*;
         import java.net.ServerSocket;
         import java.net.Socket;

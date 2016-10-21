@@ -7,3 +7,13 @@ NetworkingP2PJavaServer/.settings/
 NetworkingP2PJavaServer/.classpath
 .idea/
 *.iml
+
+/bin
+/.idea
+/out
+/src/META_INF/
+/target
+*.class
+xfer_names.dat
+peer_1001.log
+
