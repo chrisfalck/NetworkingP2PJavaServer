@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class MyClient {
+public class MyClient extends Thread {
 
     int peerId;
 
@@ -34,11 +34,13 @@ public class MyClient {
     int bytesRead = 0;
     int totalBytesRead = 0;
 
-    public MyClient(int peerId) { this.peerId = peerId; }
+    public MyClient(int peerId) {
+        this.peerId = peerId;
+    }
 
-    void run()
+    public void run()
     {
-        try{
+        try {
             //create a socket to connect to the server
             requestSocket = new Socket("localhost", 8000);
             logger.logTCPCreationEvent(peerId, "outgoing");
@@ -51,17 +53,21 @@ public class MyClient {
 
             //handshake
             outMessage = new HandshakeMessage(peerId);
+            System.out.println("Client: sending handshake...");
             out.write(outMessage.toByteArray());
 
-            boolean waitingForHandshakeResponse = false;
+            boolean waitingForHandshakeResponse = true;
 
             //TODO move logic into Protocol object
             while (waitingForHandshakeResponse) {
+                System.out.println("Client: waiting for handshake response...");
                 rawData = new byte[32];
 
                 try {
-                    bytesRead = in.read(rawData, 0, 31);
+                    bytesRead = in.read(rawData, 0, 32);
+                    System.out.println("Client: bytes read [" + bytesRead + "]");
                 } catch (IOException ioException) {
+                    System.out.println("Client: Error reading data...");
                     ioException.printStackTrace();
                 }
 
@@ -71,13 +77,14 @@ public class MyClient {
                     byte[] rawIncomingPeerId = Arrays.copyOfRange(rawData, 27, 31);
 
                     String header = new String(rawHeader);
+                    System.out.println("Client: header received: " + header);
                     int incomingPeerId = ByteBuffer.wrap(rawIncomingPeerId).getInt();
 
                     String expectedHeader = "P2PFILESHARINGPROJ";
 
                     //TODO add check for correct peerId
                     if (header.equalsIgnoreCase(expectedHeader)) {
-                        waitingForHandshakeResponse = true;
+                        waitingForHandshakeResponse = false;
                         System.out.println("Client: handshake response received");
                     }
 
@@ -85,14 +92,19 @@ public class MyClient {
 
             }
 
+            String filename = "xfer_names.dat";
             //initialize fileInputStream
-            fout = new FileOutputStream("xfer_names.dat");
+            System.out.println("Client: creating empty file [" + filename + "]");
+            fout = new FileOutputStream(filename);
 
             rawData = new byte[1000];
 
+            System.out.println("Client: downloading file...");
             bytesRead = in.read(rawData);
             totalBytesRead += bytesRead;
+
             // write data to file
+            System.out.println("Client: writing file...");
             fout.write(rawData);
         }
         catch (ConnectException e) {
@@ -117,22 +129,6 @@ public class MyClient {
                 ioException.printStackTrace();
             }
         }
-    }
-
-    //main method
-    public static void main(String args[])
-    {
-        if (args.length == 0) {
-            System.out.println("A peer ID must be provided as an argument. Exiting...");
-            System.exit(0);
-        }
-
-        //TODO
-        // Check that peerId matches one from PeerList.cfg
-
-        int peerId = Integer.parseInt(args[0]);
-        MyClient client = new MyClient(peerId);
-        client.run();
     }
 
 }

@@ -8,12 +8,12 @@ import com.networking.UF.messages.HandshakeMessage;
 import com.networking.UF.messages.Message;
 
 import java.io.*;
-        import java.net.ServerSocket;
-        import java.net.Socket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class MyServer {
+public class MyServer extends Thread {
 
     private int peerId;
 
@@ -21,36 +21,36 @@ public class MyServer {
     private static final Protocol protocol = new P2PProtocol();
     private static final int sPort = 8000;   //The server will be listening on this port number
 
-    public MyServer(int peerId) { this.peerId = peerId; }
+    public MyServer(int peerId) {
+        this.peerId = peerId;
+    }
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("Server here!");
-        if (args.length == 0) {
-            System.out.println("A peer ID must be provided as an argument. Exiting...");
-            logger.writeToLogFile("Argument length: " + args.length + " , First arg: " + args[0]);
-            System.exit(0);
-        }
+    public void run() {
+
+        System.out.println("The server is running.");
 
         //TODO
         // Check that peerId matches one from PeerList.cfg
 
-        int peerId = Integer.parseInt(args[0]);
-        MyServer server = new MyServer(peerId);
-
-        System.out.println("The server is running.");
-        ServerSocket listener = new ServerSocket(sPort);
-        int clientNum = 1;
         try {
-            while(true) {
-                new Handler(peerId, listener.accept(),clientNum).start();
-                logger.logTCPCreationEvent(peerId, "incoming");
-                System.out.println("Client "  + clientNum + " is connected!");
-                clientNum++;
-            }
-        } finally {
-            listener.close();
-        }
 
+            ServerSocket listener = new ServerSocket(sPort);
+            int clientNum = 1;
+
+            try {
+                while (true) {
+                    new Handler(peerId, listener.accept(), clientNum).start();
+                    logger.logTCPCreationEvent(peerId, "incoming");
+                    System.out.println("Client " + clientNum + " is connected!");
+                    clientNum++;
+                }
+            } finally {
+                listener.close();
+            }
+        } catch (IOException e) {
+            System.err.println("Server: socket creation error. Exiting...");
+            System.exit(0);
+        }
     }
 
     /**
@@ -65,11 +65,11 @@ public class MyServer {
 
         private byte[] fileBuffer = new byte[1000]; // data from the file
         private Socket connection;
-        private FileInputStream fin;      //stream read from file
+        private FileInputStream fin;  //stream read from file
         private InputStream in;	      //stream read from the socket
-        private OutputStream out;         //stream write to the socket
-        private int no;		      //The index number of the client
-        byte[] rawData;           //temporarily used to store incoming/outgoing data in byte form
+        private OutputStream out;     //stream write to the socket
+        private int no;		          //The index number of the client
+        byte[] rawData;               //temporarily used to store incoming/outgoing data in byte form
 
         // Keep track of amount of data transferred
         int bytesRead = 0;
@@ -82,43 +82,51 @@ public class MyServer {
         }
 
         public void run() {
-            //receive handshake
-            boolean waitingForHandshake = false;
+            try {
+                //initialize Input and Output streams
+                out = connection.getOutputStream();
+                out.flush();
+                in = connection.getInputStream();
 
-            //TODO move logic into Protocol object
-            while (waitingForHandshake) {
-                rawData = new byte[32];
+                //receive handshake
+                boolean waitingForHandshake = true;
 
-                try {
-                    bytesRead = in.read(rawData, 0, 31);
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
+                //TODO move logic into Protocol object
+                while (waitingForHandshake) {
+                    System.out.println("Server: waiting for handshake...");
+                    rawData = new byte[32];
 
-                if (bytesRead == 32) {
-                    byte[] rawHeader = Arrays.copyOfRange(rawData, 0, 18);
-                    byte[] zeroBits = Arrays.copyOfRange(rawData, 18, 27);
-                    byte[] rawIncomingPeerId = Arrays.copyOfRange(rawData, 27, 31);
+                    try {
+                        bytesRead = in.read(rawData, 0, 32);
+                        System.out.println("Server: bytes read [" + bytesRead + "]");
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
 
-                    String header = new String(rawHeader);
-                    int incomingPeerId = ByteBuffer.wrap(rawIncomingPeerId).getInt();
+                    if (bytesRead == 32) {
+                        byte[] rawHeader = Arrays.copyOfRange(rawData, 0, 18);
+                        byte[] zeroBits = Arrays.copyOfRange(rawData, 18, 27);
+                        byte[] rawIncomingPeerId = Arrays.copyOfRange(rawData, 27, 31);
 
-                    String expectedHeader = "P2PFILESHARINGPROJ";
+                        String header = new String(rawHeader);
+                        System.out.println("Server: header received: " + header);
+                        int incomingPeerId = ByteBuffer.wrap(rawIncomingPeerId).getInt();
 
-                    //TODO add check for correct peerId
-                    if (header.equalsIgnoreCase(expectedHeader)) {
-                        waitingForHandshake = true;
-                        System.out.println("Server: handshake received");
+                        String expectedHeader = "P2PFILESHARINGPROJ";
+
+                        //TODO add check for correct peerId
+                        if (header.equalsIgnoreCase(expectedHeader)) {
+                            waitingForHandshake = false;
+                            System.out.println("Server: handshake received");
+                        }
+
                     }
 
                 }
 
-            }
-
-
-            try{
                 //send handshake response
                 outMessage = new HandshakeMessage(peerId);
+                System.out.println("Server: sending handshake response...");
                 out.write(outMessage.toByteArray());
 
                 //initialize file input stream
@@ -126,13 +134,9 @@ public class MyServer {
                 while ((bytesRead = fin.read(fileBuffer)) != -1) {
                     totalBytesRead += bytesRead;
                 }
-                System.out.println("Total bytes read: " + totalBytesRead);
+                System.out.println("Server: total bytes read from file [" + totalBytesRead + "]");
 
-                //initialize Input and Output streams
-                out = connection.getOutputStream();
-                out.flush();
-                in = connection.getInputStream();
-
+                System.out.println("Server: sending file...");
                 sendBytes(Arrays.copyOfRange(fileBuffer, 0, totalBytesRead));
 
 
@@ -169,4 +173,3 @@ public class MyServer {
     }
 
 }
-

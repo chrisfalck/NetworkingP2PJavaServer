@@ -8,6 +8,8 @@ import com.networking.UF.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Peer creates a Client and Server parameterized according to two config files:
@@ -23,10 +25,8 @@ public class Peer {
     private int peerId;
 
     /** Associations */
-    private ProcessBuilder clientPb = new ProcessBuilder("java", "-classpath", "target/classes", "com.networking.UF.client.MyClient", Integer.toString(peerId));
-    private ProcessBuilder serverPb = new ProcessBuilder("java", "-classpath", "target/classes", "com.networking.UF.server.MyServer", Integer.toString(peerId));
-//    private MyClient client = new MyClient();
-//    private MyServer server = new MyServer();
+    private MyClient client;
+    private MyServer server;
     private Protocol protocol = new P2PProtocol();
     private static Logger logger = Logger.getInstance();
     private static FileManager fileManager = FileManager.getInstance();
@@ -36,17 +36,24 @@ public class Peer {
     }
 
     public void initialize() throws IOException {
-        File serverLog = new File("server.log");
-        serverPb.redirectOutput(serverLog);
-        serverPb.redirectError(serverLog);
-        serverPb.start();
+        server = new MyServer(peerId);
+        server.start();
         System.out.println("Peer: Server started.");
 
-        File clientLog = new File("client.log");
-        clientPb.redirectOutput(clientLog);
-        clientPb.redirectError(clientLog);
-        clientPb.start();
+        client = new MyClient(peerId);
+        client.start();
         System.out.println("Peer: Client started.");
+
+        // monitor state of threads
+//        while (true) {
+//            System.out.println("--- Server Thread: " + server.getState() + "---");
+//            System.out.println("--- Client Thread: " + client.getState() + "---");
+//            try {
+//                TimeUnit.SECONDS.sleep(3);
+//            } catch (InterruptedException e) {
+//                System.out.println("Peer: Delay failed...");
+//            }
+//        }
     }
 
     /** Accessor methods */
