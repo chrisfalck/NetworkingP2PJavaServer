@@ -8,6 +8,8 @@ import com.networking.UF.messages.Message;
  */
 public class P2PProtocol implements Protocol {
 
+    private static P2PProtocol instance = null;
+
     private MessageHandler chokeMessageHandler;
     private MessageHandler unchokeMessageHandler;
     private MessageHandler interestedMessageHandler;
@@ -20,7 +22,7 @@ public class P2PProtocol implements Protocol {
     private MessageHandler handshakeMessageHandler;
 
     /** Initialize with all the necessary message handlers */
-    public P2PProtocol() {
+    private P2PProtocol() {
         this.chokeMessageHandler = new chokeMessageHandler();
         this.unchokeMessageHandler = new unchokeMessageHandler();
         this.interestedMessageHandler = new interestedMessageHandler();
@@ -30,6 +32,14 @@ public class P2PProtocol implements Protocol {
         this.requestMessageHandler = new RequestMessageHandler();
         this.pieceMessageHandler = new pieceMessageHandler();
         this.handshakeMessageHandler = new HandshakeMessageHandler();
+    }
+
+    public static P2PProtocol getInstance() {
+        if (instance == null) {
+            instance = new P2PProtocol();
+        }
+
+        return instance;
     }
 
     public void receiveMessage(Message message) {}

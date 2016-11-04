@@ -18,7 +18,6 @@ public class MyServer extends Thread {
     private int peerId;
 
     private static final Logger logger = Logger.getInstance();
-    private static final Protocol protocol = new P2PProtocol();
     private static final int sPort = 8000;   //The server will be listening on this port number
 
     public MyServer(int peerId) {
@@ -59,6 +58,7 @@ public class MyServer extends Thread {
      */
     private static class Handler extends Thread {
         int peerId;
+        private static final Protocol protocol = P2PProtocol.getInstance();
 
         private Message inMessage;   // POD for structuring incoming Messages
         private Message outMessage;  // POD for structuring outgoing messages

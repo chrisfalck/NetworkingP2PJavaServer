@@ -35,7 +35,7 @@ public class FileManager {
 	/**
 	 * Creates all directories and files that will be used throughout the life of the program.
 	 * Called once at the start of the program.
-	 * @param thisPeerId The id of this peer. Used to initialize static variables and direcotory/file names.
+	 * @param thisPeerId The id of this peer. Used to initialize static variables and directory/file names.
 	 * @throws IOException
 	 */
 	public void initializeDirectoriesAndFiles(Integer thisPeerId) throws IOException {

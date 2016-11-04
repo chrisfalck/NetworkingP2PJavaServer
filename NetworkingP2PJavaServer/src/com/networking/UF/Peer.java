@@ -6,10 +6,7 @@ import com.networking.UF.server.MyServer;
 import com.networking.UF.server.Server;
 import com.networking.UF.Logger;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The Peer creates a Client and Server parameterized according to two config files:
@@ -43,17 +40,6 @@ public class Peer {
         client = new MyClient(peerId);
         client.start();
         System.out.println("Peer: Client started.");
-
-        // monitor state of threads
-//        while (true) {
-//            System.out.println("--- Server Thread: " + server.getState() + "---");
-//            System.out.println("--- Client Thread: " + client.getState() + "---");
-//            try {
-//                TimeUnit.SECONDS.sleep(3);
-//            } catch (InterruptedException e) {
-//                System.out.println("Peer: Delay failed...");
-//            }
-//        }
     }
 
     /** Accessor methods */
