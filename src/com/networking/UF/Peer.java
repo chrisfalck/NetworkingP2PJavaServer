@@ -39,6 +39,8 @@ public class Peer {
     		
     		// Create a client connection to each server in the peer info config file.
     		for (int i = 0; i < peerInfoConfig.getConfigLength(); ++i) {
+    			
+    			System.out.println(peerInfoConfig.getHostName(i) + " " + peerInfoConfig.getListeningPort(i) + " " + peerInfoConfig.getPeerId(i));
 
     			// Skip the line in the peer info config that corresponds to this Peer itself.
     			if (peerInfoConfig.getPeerId(i) == this.peerId) {
