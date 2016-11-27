@@ -100,10 +100,10 @@ public class P2PProtocol implements Protocol {
 		// Receive the raw byte array.
 		rawReceivedMessage = (byte[])in.readObject();
 
-		if (origin.equals("client")) {
+		if (origin.equals("client") && rawReceivedMessage.length >= 32) {
 			System.out.println("Received message from server: " + new String(Arrays.copyOfRange(rawReceivedMessage, 0, 28)) 
 					+ Ints.fromByteArray((Arrays.copyOfRange(rawReceivedMessage, 28, 32))));
-		} else {
+		} else if (rawReceivedMessage.length >= 32) {
 			System.out.println("Received message from client: " + new String(Arrays.copyOfRange(rawReceivedMessage, 0, 28)) 
 					+ Ints.fromByteArray((Arrays.copyOfRange(rawReceivedMessage, 28, 32))));
 		}
