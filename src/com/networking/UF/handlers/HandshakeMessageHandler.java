@@ -22,6 +22,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 
 	public HandshakeMessageHandler(Client client, P2PProtocol protocol) {
 		this.myClient = client;
+		this.myProtocol = protocol;
 	}
 
 	@Override
