@@ -87,7 +87,7 @@ public class P2PProtocol implements Protocol {
 		this.bitfieldMessageHandler = new BitfieldMessageHandler(client);
 		this.requestMessageHandler = new RequestMessageHandler();
 		this.pieceMessageHandler = new PieceMessageHandler();
-		this.handshakeMessageHandler = new HandshakeMessageHandler(client);
+		this.handshakeMessageHandler = new HandshakeMessageHandler(client, this);
 		this.peerId = peerId;
 		this.origin = protocolOrigin;
 		this.myClient = client;

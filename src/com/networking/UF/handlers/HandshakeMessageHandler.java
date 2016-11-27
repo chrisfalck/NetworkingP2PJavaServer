@@ -20,7 +20,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 		this.myProtocol = protocol;
 	}
 
-	public HandshakeMessageHandler(Client client) {
+	public HandshakeMessageHandler(Client client, P2PProtocol protocol) {
 		this.myClient = client;
 	}
 
