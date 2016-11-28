@@ -33,16 +33,6 @@ import com.networking.UF.server.Server;
  *
  */
 public class P2PProtocol implements Protocol {
-
-	private MessageHandler chokeMessageHandler;
-	private MessageHandler unchokeMessageHandler;
-	private MessageHandler interestedMessageHandler;
-	private MessageHandler uninterestedMessageHandler;
-	private MessageHandler haveMessageHandler;
-	private MessageHandler bitfieldMessageHandler;
-	private MessageHandler requestMessageHandler;
-	private MessageHandler pieceMessageHandler;
-	private MessageHandler handshakeMessageHandler;
 	
 	private Client myClient;
 	private Server myServer;
@@ -73,30 +63,12 @@ public class P2PProtocol implements Protocol {
 	private static Logger logger = Logger.getInstance();
 
 	public P2PProtocol(int peerId, String protocolOrigin, Server server) {
-		this.chokeMessageHandler = new ChokeMessageHandler();
-		this.unchokeMessageHandler = new UnchokeMessageHandler();
-		this.interestedMessageHandler = new InterestedMessageHandler();
-		this.uninterestedMessageHandler = new UninterestedMessageHandler();
-		this.haveMessageHandler = new HaveMessageHandler();
-		this.bitfieldMessageHandler = new BitfieldMessageHandler(server, connectedPeerId);
-		this.requestMessageHandler = new RequestMessageHandler();
-		this.pieceMessageHandler = new PieceMessageHandler();
-		this.handshakeMessageHandler = new HandshakeMessageHandler(server, this);
 		this.peerId = peerId;
 		this.origin = protocolOrigin;
 		this.myServer = server;
 	}
 	
 	public P2PProtocol(int peerId, String protocolOrigin, Client client) {
-		this.chokeMessageHandler = new ChokeMessageHandler();
-		this.unchokeMessageHandler = new UnchokeMessageHandler();
-		this.interestedMessageHandler = new InterestedMessageHandler();
-		this.uninterestedMessageHandler = new UninterestedMessageHandler();
-		this.haveMessageHandler = new HaveMessageHandler();
-		this.bitfieldMessageHandler = new BitfieldMessageHandler(client);
-		this.requestMessageHandler = new RequestMessageHandler();
-		this.pieceMessageHandler = new PieceMessageHandler();
-		this.handshakeMessageHandler = new HandshakeMessageHandler(client, this);
 		this.peerId = peerId;
 		this.origin = protocolOrigin;
 		this.myClient = client;
@@ -177,9 +149,15 @@ public class P2PProtocol implements Protocol {
 			
 			// Build the message.
 			HandshakeMessage handshakeMessage = new HandshakeMessage(peerIdFromMessage);
+			HandshakeMessageHandler handshakeMessageHandler;
+			if (myClient != null) {
+				handshakeMessageHandler = new HandshakeMessageHandler(myClient, this);
+			} else {
+				handshakeMessageHandler = new HandshakeMessageHandler(myServer, this);
+			}
 			
 			// Handle the message.
-			this.handshakeMessageHandler.receiveMessage(handshakeMessage);
+			handshakeMessageHandler.receiveMessage(handshakeMessage);
 			return;
 		} 
 		
@@ -217,7 +195,13 @@ public class P2PProtocol implements Protocol {
 
 		// Bitfield.
 		case 5:
-			this.bitfieldMessageHandler.receiveMessage(regularMessage);
+			BitfieldMessageHandler bitfieldMessageHandler;
+			if (myClient != null) {
+				bitfieldMessageHandler = new BitfieldMessageHandler(myClient);
+			} else {
+				bitfieldMessageHandler = new BitfieldMessageHandler(myServer, connectedPeerId);
+			}
+			bitfieldMessageHandler.receiveMessage(regularMessage);
 			break;
 
 		// Request.
