@@ -109,10 +109,8 @@ public class Server implements Runnable {
 			} 
 			else {
 				System.out.println("Waiting for further implementation.");
-				TimeUnit.MINUTES.wait(5);
+				while(true){}
 			}
-			
-			return null;
 		}
 
 		public void run() {
@@ -133,8 +131,7 @@ public class Server implements Runnable {
 						
 						Message messageToSend = getNextMessageToSend();
 
-						System.out.println("Sending message to client: " + new String(Arrays.copyOfRange(messageToSend.toByteArray(), 0, 28)) 
-								+ Ints.fromByteArray((Arrays.copyOfRange(messageToSend.toByteArray(), 28, 32))));
+						System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
 
 						p2pProtocol.sendMessage(out, messageToSend);
 						System.out.println("End-Server------------------------------------------------------------------------\n\n\n");

@@ -21,6 +21,9 @@ Server: Waits for bitfield message.
 
 Client: Having completed the handshake, the client sends a bitfield message to the server.
 Server: The server receives the bitfield message and updates the client's connection state object. 
+		The server then sends a return bitfield message to the client. 
+		
+
 
 
 
