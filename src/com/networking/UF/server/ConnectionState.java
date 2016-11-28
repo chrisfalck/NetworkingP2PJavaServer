@@ -6,6 +6,7 @@ public class ConnectionState {
 	
 	private int peerId;
 	private boolean haveReceivedHandshake = false;
+	private boolean haveReceivedBitfield = false;
 	private boolean choked = false;
 	private boolean interested = false;
 	private BitSet bitfield = null;
@@ -22,6 +23,13 @@ public class ConnectionState {
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
 	}
 	
+	
+	public boolean haveReceivedBitfield() {
+		return haveReceivedBitfield;
+	}
+	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
+		this.haveReceivedBitfield = haveReceivedBitfield;
+	}
 	public boolean haveReceivedHandshake() {
 		return haveReceivedHandshake;
 	}

@@ -18,6 +18,7 @@ import com.networking.UF.P2PProtocol;
 import com.networking.UF.messages.HandshakeMessage;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
+import com.networking.UF.server.ConnectionState;
 
 public class Client implements Runnable {
 	Socket requestSocket;           //socket connect to the server
@@ -30,16 +31,19 @@ public class Client implements Runnable {
 	private int portNumber;
 	private int serverPeerId;
 
-	// Client state variables. 
-	private boolean haveReceivedHandshake = false;
-	private boolean haveReceivedBitfield = false;
+	// Track this client's state.
+	private ConnectionState connectionState;
+	
+	public boolean haveReceivedHandshake() {
+		return this.connectionState.haveReceivedHandshake();
+	}
 	
 	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
-		this.haveReceivedBitfield = haveReceivedBitfield;
+		this.connectionState.setHaveReceivedBitfield(haveReceivedBitfield);
 	}
 
 	public void setHaveReceivedHandshake(boolean haveReceivedHandshake) {
-		this.haveReceivedHandshake = haveReceivedHandshake;
+		this.connectionState.setHaveReceivedHandshake(haveReceivedHandshake);
 	}
 
 	/**
@@ -60,17 +64,27 @@ public class Client implements Runnable {
 		this.serverAddress = serverAddress;
 		this.portNumber = portNumber;
 		this.serverPeerId = serverPeerId;
+		this.connectionState = new ConnectionState(fileManager.getThisPeerIdentifier());
 	}
 	
+	/**
+	 * Determines the next message the client should send by analysing the client's state variables. 
+	 * Returns an appropriate built message to be sent. 
+	 * @return
+	 * @throws InterruptedException
+	 */
 	private Message getNextMessageToSend() throws InterruptedException {
-		if (!haveReceivedHandshake) {
+		if (!connectionState.haveReceivedHandshake()) {
+			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
-		} else if (haveReceivedHandshake && !haveReceivedBitfield) {
+		} else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+			System.out.println("Building bitfield message to send to server.");
 			BitSet bitfield = fileManager.getBitfield();
 			int messageLength = 4 + 1 + bitfield.size();
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
-		} else if (haveReceivedHandshake && haveReceivedBitfield) {
+		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+			System.out.println("Waiting for further implementation.");
 			TimeUnit.MINUTES.wait(5);
 		}
 		
@@ -82,9 +96,10 @@ public class Client implements Runnable {
 		try{
 			
 			// Time for all servers to start before clients start sending messages. 
-			TimeUnit.SECONDS.sleep(10);
+			TimeUnit.SECONDS.sleep(8);
 
 			// Create a socket to connect to the server.
+			System.out.println("Client from peer " + fileManager.getThisPeerIdentifier() + " connecting to " + this.serverAddress + " on port " + this.portNumber);
 			requestSocket = new Socket(this.serverAddress, this.portNumber);
 			System.out.println("Client from peer " + fileManager.getThisPeerIdentifier() + " connected to " + this.serverAddress + " on port " + this.portNumber);
 			logger.logTCPCreationEvent(this.serverPeerId, "outgoing");
@@ -95,6 +110,7 @@ public class Client implements Runnable {
 			
 			while(true)
 			{
+				System.out.println("\n\n\nStart-Client----------------------------------------------------------------------");
 				p2pProtocol.reset();
 
 				Message messageToSend = getNextMessageToSend();
@@ -102,7 +118,7 @@ public class Client implements Runnable {
 
 				p2pProtocol.sendMessage(out, messageToSend);
 				p2pProtocol.receiveMessage(in);
-				System.out.println("\n\n\n\n\n\n");
+				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
 				TimeUnit.SECONDS.sleep(10);
 			}
 		}

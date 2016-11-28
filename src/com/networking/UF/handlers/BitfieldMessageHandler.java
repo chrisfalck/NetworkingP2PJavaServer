@@ -16,7 +16,7 @@ import com.networking.UF.server.Server;
 public class BitfieldMessageHandler implements MessageHandler {
 	private Server myServer;
 	private Client myClient;
-	private int peerId;
+	private int peerId; // The peer on the other end of the TCP connection. 
 	private static FileManager fileManager = FileManager.getInstance();
 
 	public BitfieldMessageHandler(Server server, int peerId) {
@@ -43,6 +43,7 @@ public class BitfieldMessageHandler implements MessageHandler {
     	} else {
     		ConnectionState connectionState = myServer.getConnectionState(peerId);
     		connectionState.setBitfield(newBitfield);
+    		connectionState.setHaveReceivedBitfield(true);
     		myServer.setConnectionState(peerId, connectionState);
     	}
     	

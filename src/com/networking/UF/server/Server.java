@@ -6,18 +6,25 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageTypeSpecifier;
 
 import com.google.common.primitives.Ints;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
+import com.networking.UF.MessageType;
 import com.networking.UF.P2PProtocol;
 import com.networking.UF.messages.HandshakeMessage;
+import com.networking.UF.messages.Message;
+import com.networking.UF.messages.RegularMessage;
 
 public class Server implements Runnable {
 
-	private static final int sPort = 6008;   //The server will be listening on this port number
+	private static final int sPort = 6009;   //The server will be listening on this port number
 	static FileManager fileManager = FileManager.getInstance();
 	static Logger logger = Logger.getInstance();
 	
@@ -57,10 +64,19 @@ public class Server implements Runnable {
 	 * loop and are responsible for dealing with a single client's requests.
 	 */
 	public static class Handler extends Thread {
+		// The Socket representing our TCP connectin. 
 		private Socket connection;
-		private ObjectInputStream in;	//stream read from the socket
-		private ObjectOutputStream out;    //stream write to the socket
+		
+		// The instream from our TCP connection. 
+		private ObjectInputStream in;	
+		
+		// The outstream for our TCP connection. 
+		private ObjectOutputStream out;    
+
+		// The Server that started this Handler thread. 
 		private Server myServer;
+		
+		// The P2PProtocol created for use by this Handler thread. 
 		private P2PProtocol p2pProtocol;
 
 
@@ -68,6 +84,35 @@ public class Server implements Runnable {
 			this.connection = connection;
 			this.myServer = server;
 			this.p2pProtocol = new P2PProtocol(fileManager.getThisPeerIdentifier(), "server", myServer);
+		}
+		
+		/**
+		 * Determines the next message the client should send by analysing the client's state variables. 
+		 * Returns an appropriate built message to be sent. 
+		 * @return
+		 * @throws InterruptedException
+		 */
+		private Message getNextMessageToSend() throws InterruptedException {
+			ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
+			if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+				System.out.println("Building handshake message to send to client.");
+
+				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
+			} 
+			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+				System.out.println("Building bitfield message to send to client.");
+				BitSet bitfield = fileManager.getBitfield();
+				int messageLength = 4 + 1 + bitfield.size();
+				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
+
+				return bitfieldMessage;
+			} 
+			else {
+				System.out.println("Waiting for further implementation.");
+				TimeUnit.MINUTES.wait(5);
+			}
+			
+			return null;
 		}
 
 		public void run() {
@@ -83,15 +128,16 @@ public class Server implements Runnable {
 					{
 						p2pProtocol.reset();
 						
-						//receive the message sent from the client
+						// Wait for the client messages to arrive. 
 						p2pProtocol.receiveMessage(in);
 						
-						HandshakeMessage messageToSend = new HandshakeMessage(fileManager.getThisPeerIdentifier());
+						Message messageToSend = getNextMessageToSend();
 
 						System.out.println("Sending message to client: " + new String(Arrays.copyOfRange(messageToSend.toByteArray(), 0, 28)) 
 								+ Ints.fromByteArray((Arrays.copyOfRange(messageToSend.toByteArray(), 28, 32))));
 
 						p2pProtocol.sendMessage(out, messageToSend);
+						System.out.println("End-Server------------------------------------------------------------------------\n\n\n");
 					}
 				}
 				catch(ClassNotFoundException classnot){

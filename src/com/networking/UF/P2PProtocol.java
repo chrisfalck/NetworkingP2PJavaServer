@@ -47,7 +47,16 @@ public class P2PProtocol implements Protocol {
 	private Client myClient;
 	private Server myServer;
 	
-	public int connectedPeerId;
+	// The peer on the other end of the TCP connection. 
+	private int connectedPeerId;
+
+	public int getConnectedPeerId() {
+		return connectedPeerId;
+	}
+	
+	public void setConnectedPeerId(int connectedPeerId) {
+		this.connectedPeerId = connectedPeerId;
+	}
 	
 	// Have we already made a handshake connection for this protocol instance. 
 	private boolean firstHandshake = true;
@@ -99,6 +108,8 @@ public class P2PProtocol implements Protocol {
 
 		// Receive the raw byte array.
 		rawReceivedMessage = (byte[])in.readObject();
+		
+		if (origin.equals("server")) System.out.println("\n\n\nStart-Server----------------------------------------------------------------------");
 
 		if (origin.equals("client") && rawReceivedMessage.length >= 32) {
 			System.out.println("Received message from server: " + new String(Arrays.copyOfRange(rawReceivedMessage, 0, 28)) 
