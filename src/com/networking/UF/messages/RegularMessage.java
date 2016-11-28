@@ -24,8 +24,9 @@ public class RegularMessage implements Message {
 
 	public byte[] toByteArray() {
         byte[] messageLengthBytes = Ints.toByteArray(messageLength);
+        byte[] lastByteOfConvertedMessageType = new byte[] {Ints.toByteArray(messageType)[3]};
 
-        return Bytes.concat(messageLengthBytes, Ints.toByteArray(messageType), messagePayload);
+        return Bytes.concat(messageLengthBytes, lastByteOfConvertedMessageType, messagePayload);
     }
     
     public String getMessageType() {

@@ -80,7 +80,7 @@ public class Client implements Runnable {
 		} else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
 			System.out.println("Building bitfield message to send to server.");
 			BitSet bitfield = fileManager.getBitfield();
-			int messageLength = 4 + 1 + bitfield.size();
+			int messageLength = 1 + bitfield.size();
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
 		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
@@ -119,7 +119,7 @@ public class Client implements Runnable {
 				p2pProtocol.sendMessage(out, messageToSend);
 				p2pProtocol.receiveMessage(in);
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
-				TimeUnit.SECONDS.sleep(10);
+				TimeUnit.SECONDS.sleep(5);
 			}
 		}
 		catch (Exception e) {

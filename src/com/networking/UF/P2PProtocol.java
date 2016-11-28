@@ -111,12 +111,11 @@ public class P2PProtocol implements Protocol {
 		
 		if (origin.equals("server")) System.out.println("\n\n\nStart-Server----------------------------------------------------------------------");
 
-		if (origin.equals("client") && rawReceivedMessage.length >= 32) {
-			System.out.println("Received message from server: " + new String(Arrays.copyOfRange(rawReceivedMessage, 0, 28)) 
-					+ Ints.fromByteArray((Arrays.copyOfRange(rawReceivedMessage, 28, 32))));
-		} else if (rawReceivedMessage.length >= 32) {
-			System.out.println("Received message from client: " + new String(Arrays.copyOfRange(rawReceivedMessage, 0, 28)) 
-					+ Ints.fromByteArray((Arrays.copyOfRange(rawReceivedMessage, 28, 32))));
+		if (origin.equals("client")) {
+			System.out.println("Received message from server: " + connectedPeerId);
+		} 
+		else {
+			System.out.println("Received message from client: " + connectedPeerId);
 		}
 
 		// Create an appropriate message type from the raw array and call it's handler.
@@ -135,9 +134,11 @@ public class P2PProtocol implements Protocol {
 
 			if (origin.equals("client")) {
 				// If the rawReceivedMessage is null, we are sending a message from a client object.
+				System.out.println("Sending message to server: " + connectedPeerId);
 				out.writeObject(messageToSend.toByteArray());
 			} else {
 				// If rawReceivedMessage contains information, we are sending a message from a server object.
+				System.out.println("Sending message to server: " + connectedPeerId);
 				out.writeObject(messageToSend.toByteArray());
 			}
 
@@ -151,8 +152,6 @@ public class P2PProtocol implements Protocol {
 	
 	
 	private void callAppropriateReceivingMessageHandler(byte[] rawReceivedMessage) {
-		System.out.println("Handling message.");
-		
 		// Will contain "P2PFILESHARINGPROJ" if we're receiving a handshake message.
 		String handshakeHeader = new String(Arrays.copyOfRange(rawReceivedMessage, 0, 18));
 		
@@ -186,8 +185,8 @@ public class P2PProtocol implements Protocol {
 		
 		// Parse out the regular message fields. 
 		int messageLength = Ints.fromByteArray(Arrays.copyOfRange(rawReceivedMessage, 0, 4));
-		byte[] messagePayload = Arrays.copyOfRange(rawReceivedMessage, 5, rawReceivedMessage.length);
-		RegularMessage regularMessage = new RegularMessage(messageLength, 5, messagePayload);
+		byte[] messagePayload = Arrays.copyOfRange(rawReceivedMessage, regularHeader, rawReceivedMessage.length);
+		RegularMessage regularMessage = new RegularMessage(messageLength, regularHeader, messagePayload);
 
 		// Otherwise see what kind of message it is. 
 		switch (regularHeader) {
