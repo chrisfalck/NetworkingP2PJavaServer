@@ -163,6 +163,7 @@ public class FileManager {
 		// Place the whole file's content in a byte array.
 		DataInputStream fileIn = new DataInputStream(new FileInputStream(FileManager.thisPeerDataFile));
 		fileIn.readFully(wholeFile);
+		fileIn.close();
 		
 		// Set all bits corresponding to file pieces to true because we have all the file pieces. 
 		for (int i = 0; i < filePieces.length; i++) {
@@ -177,13 +178,13 @@ public class FileManager {
 			}
 		}
 		
-		for (byte character : filePieces[10]) {
-			System.out.println((char)character + "");
-		}
-		
-		for (int i = 0; i < bitfield.size(); i++) {
-			System.out.print(bitfield.get(i) ? "1" : "0");
-		}
+//		for (byte character : filePieces[10]) {
+//			System.out.println((char)character + "");
+//		}
+//		
+//		for (int i = 0; i < bitfield.size(); i++) {
+//			System.out.print(bitfield.get(i) ? "1" : "0");
+//		}
 	}
 	
 	/**
