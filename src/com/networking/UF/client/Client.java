@@ -85,7 +85,7 @@ public class Client implements Runnable {
 			return bitfieldMessage;
 		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 			System.out.println("Waiting for further implementation.");
-			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
+			while(true) {}
 		}
 		
 		return null;
