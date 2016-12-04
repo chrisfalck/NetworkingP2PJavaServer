@@ -5,14 +5,32 @@ import java.util.BitSet;
 public class ConnectionState {
 	
 	private int peerId;
+
 	private boolean haveReceivedHandshake = false;
 	private boolean haveReceivedBitfield = false;
 	private boolean choked = true;
+	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
 	private boolean hasReceivedPiece = false;
 	private BitSet bitfield = null;
 	private int connectionSpeed = 0;
 	
+	public int getPeerId() {
+		return peerId;
+	}
+
+	public void setPeerId(int peerId) {
+		this.peerId = peerId;
+	}
+	
+	public boolean isOptimisticallyUnchoked() {
+		return optimisticallyUnchoked;
+	}
+
+	public void setOptimisticallyUnchoked(boolean optimisticallyUnchoked) {
+		this.optimisticallyUnchoked = optimisticallyUnchoked;
+	}
+
 	public int getConnectionSpeed() {
 		return connectionSpeed;
 	}

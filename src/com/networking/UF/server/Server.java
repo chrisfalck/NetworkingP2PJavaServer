@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.networking.UF.ConfigParser;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
@@ -23,7 +24,8 @@ public class Server implements Runnable {
 	private static final int sPort = 6009;   //The server will be listening on this port number
 	static FileManager fileManager = FileManager.getInstance();
 	static Logger logger = Logger.getInstance();
-	
+	private int numPreferredNeighbors = 0;
+
 	ConcurrentHashMap<Integer, ConnectionState> connectionStates = new ConcurrentHashMap<Integer, ConnectionState>();
 	
 	public ConnectionState getConnectionState(Integer peerId) {
@@ -39,6 +41,25 @@ public class Server implements Runnable {
 		}
 	}
 	
+	public void updateOptimisticallyUnchokedNeighbor() {
+		Random generator = new Random(); 
+		try {
+			int randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+			while (true) {
+				boolean isNotPreferredNeighbor = (connectionStates.get(randomIndex).isChoked() == true);
+				boolean isNotOwnPeer = (connectionStates.get(randomIndex).getPeerId() != fileManager.getThisPeerIdentifier());
+				if (isNotOwnPeer && isNotPreferredNeighbor) break;
+				else {
+					randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+				}
+			}
+
+			connectionStates.get(randomIndex).setOptimisticallyUnchoked(true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void updatePreferredNeighbors() {
 		Enumeration<Integer> peerIds = connectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
@@ -48,17 +69,18 @@ public class Server implements Runnable {
 			ConnectionState currentConnectionState = getConnectionState(currentPeerId);
 			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 		}
-		
-		Random generator = new Random(); 
-		
-		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index. 
+
+		Random generator = new Random();
+
+		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index.
 		while (unsortedPeers.size() > 0) {
 			double shortestDelay = Integer.MAX_VALUE;
 			int shortestDelayPeerId = 0;
+			int shortestDelayPeerIdIndex = 0;
 			for (int i = 0; i < unsortedPeers.size(); ++i) {
 				if (unsortedPeers.get(i).peerAndSpeedSpeed < shortestDelay) {
 					shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
-					shortestDelayPeerId = unsortedPeers.get(i).peerAndSpeedId;
+					shortestDelayPeerIdIndex = i;
 				} else if (unsortedPeers.get(i).peerAndSpeedSpeed == shortestDelay) {
 					int tieBreaker  = generator.nextInt(2);
 					if (tieBreaker == 0) {
@@ -67,15 +89,33 @@ public class Server implements Runnable {
 					}
 				}
 			}
-			
-			sortedPeers.add(unsortedPeers.get(shortestDelayPeerId));
-			unsortedPeers.remove(shortestDelayPeerId);
+			sortedPeers.add(unsortedPeers.get(shortestDelayPeerIdIndex));
+			unsortedPeers.remove(shortestDelayPeerIdIndex);
+		}
+
+		try {
+			if (numPreferredNeighbors == 0) {
+				numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
+			}
+			for (int i = 0; i < connectionStates.size(); ++i) {
+				if (i < numPreferredNeighbors) {
+					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
+				} else {
+					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
 	public synchronized void setConnectionState(Integer peerId, ConnectionState connectionState) {
 		connectionStates.put(peerId, connectionState);
 		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + " updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
+	}
+
+	public void setNumPreferredNeighbors(int numPreferredNeighbors) {
+		this.numPreferredNeighbors = numPreferredNeighbors;
 	}
 
 	public void run() {

@@ -1,5 +1,7 @@
 package com.networking.UF;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import com.networking.UF.client.Client;
@@ -32,9 +34,10 @@ public class Peer {
     		// Parse config files and store their info in two config objects.
     		this.commonConfig = ConfigParser.parseCommonFile();
     		this.peerInfoConfig = ConfigParser.parsePeerInfoFile();
+    		Server myPeerServer = new Server();
     		
     		// The server is intended to serve information from this Peer.
-    		Thread serverThread = new Thread(new Server(), "serverThread");
+    		Thread serverThread = new Thread(myPeerServer, "serverThread");
     		serverThread.start();
     		
     		// Create a client connection to each server in the peer info config file.
@@ -52,7 +55,25 @@ public class Peer {
     			
     		}
     		
-    		while(true) {}
+    		int timeBetweenUnchoked = ConfigParser.parseCommonFile().getUnchokingInterval();
+    		int timeBetweenOptimisticallyUnchoked = ConfigParser.parseCommonFile().getOptimisticUnchokingInterval();
+    		
+    		Timer chokingTimer = new Timer();
+    		Timer optimisticChokingTimer = new Timer();
+    		
+    		chokingTimer.schedule(new TimerTask() {
+    			public void run() {
+    				myPeerServer.updatePreferredNeighbors();
+    			}
+    		}, 0, timeBetweenUnchoked);
+    		
+    		optimisticChokingTimer.schedule(new TimerTask() {
+				public void run() {
+					myPeerServer.updateOptimisticallyUnchokedNeighbor();
+				}
+			}, 0, timeBetweenOptimisticallyUnchoked);
+    		
+    		while (true) {}
 
     	} catch (Exception exception) {
     		System.err.println("Exception:\n" + exception.toString());
