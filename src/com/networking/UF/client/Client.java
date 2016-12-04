@@ -16,6 +16,7 @@ import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
 import com.networking.UF.P2PProtocol;
+import com.networking.UF.Peer;
 import com.networking.UF.messages.HandshakeMessage;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -31,6 +32,7 @@ public class Client implements Runnable {
 	private String serverAddress;
 	private int portNumber;
 	private int serverPeerId;
+	Peer myPeer;
 
 	// Track this client's state.
 	private ConnectionState connectionState;
@@ -76,11 +78,12 @@ public class Client implements Runnable {
 	 * @param portNumber
 	 * @param serverPeerId
 	 */
-	public Client(String serverAddress, int portNumber, int serverPeerId) {
+	public Client(String serverAddress, int portNumber, int serverPeerId, Peer myPeer) {
 		this.serverAddress = serverAddress;
 		this.portNumber = portNumber;
 		this.serverPeerId = serverPeerId;
 		this.connectionState = new ConnectionState(fileManager.getThisPeerIdentifier());
+		this.myPeer = myPeer;
 	}
 	
 	/**
@@ -112,7 +115,7 @@ public class Client implements Runnable {
 			}
 			
 		// Starts here after initialization. 
-		} else {
+		} else if (connectionState.getHasReceivedPiece() == true){
 			
 		}
 		

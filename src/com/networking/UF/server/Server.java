@@ -15,6 +15,7 @@ import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
 import com.networking.UF.P2PProtocol;
+import com.networking.UF.Peer;
 import com.networking.UF.messages.HandshakeMessage;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -25,8 +26,13 @@ public class Server implements Runnable {
 	static FileManager fileManager = FileManager.getInstance();
 	static Logger logger = Logger.getInstance();
 	private int numPreferredNeighbors = 0;
+	Peer myPeer;
 
 	ConcurrentHashMap<Integer, ConnectionState> connectionStates = new ConcurrentHashMap<Integer, ConnectionState>();
+	
+	public Server(Peer myPeer) {
+		this.myPeer = myPeer;
+	}
 	
 	public ConnectionState getConnectionState(Integer peerId) {
 		return connectionStates.get(peerId);
