@@ -34,8 +34,8 @@ public class Server implements Runnable {
 	
 	private class PeerAndSpeed {
 		public int peerAndSpeedId;
-		public int peerAndSpeedSpeed;
-		public PeerAndSpeed(int peerId, int peerSpeed) {
+		public long peerAndSpeedSpeed;
+		public PeerAndSpeed(int peerId, long peerSpeed) {
 			peerAndSpeedId = peerId;
 			peerAndSpeedSpeed = peerSpeed;
 		}
