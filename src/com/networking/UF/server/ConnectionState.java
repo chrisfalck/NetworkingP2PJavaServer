@@ -7,10 +7,19 @@ public class ConnectionState {
 	private int peerId;
 	private boolean haveReceivedHandshake = false;
 	private boolean haveReceivedBitfield = false;
-	private boolean choked = false;
+	private boolean choked = true;
 	private boolean interested = false;
 	private BitSet bitfield = null;
+	private int connectionSpeed = 0;
 	
+	public int getConnectionSpeed() {
+		return connectionSpeed;
+	}
+
+	public void setConnectionSpeed(int connectionSpeed) {
+		this.connectionSpeed = connectionSpeed;
+	}
+
 	public ConnectionState(int peerId) {
 		this.peerId = peerId;
 	}
@@ -18,6 +27,7 @@ public class ConnectionState {
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
 						  "haveReceivedHandshake: " + haveReceivedHandshake + "\n" +
+						  "haveReceivedBitfield " + haveReceivedBitfield + "\n" +
 						  "choked: " + choked + "\n" +
 						  "interested: " + interested + "\n" + 
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));

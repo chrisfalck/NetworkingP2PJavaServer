@@ -4,16 +4,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Connection;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
+import java.util.Enumeration;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
-import javax.imageio.ImageTypeSpecifier;
-
-import com.google.common.primitives.Ints;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
@@ -32,6 +28,49 @@ public class Server implements Runnable {
 	
 	public ConnectionState getConnectionState(Integer peerId) {
 		return connectionStates.get(peerId);
+	}
+	
+	private class PeerAndSpeed {
+		public int peerAndSpeedId;
+		public int peerAndSpeedSpeed;
+		public PeerAndSpeed(int peerId, int peerSpeed) {
+			peerAndSpeedId = peerId;
+			peerAndSpeedSpeed = peerSpeed;
+		}
+	}
+	
+	public void updatePreferredNeighbors() {
+		Enumeration<Integer> peerIds = connectionStates.keys();
+		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
+		ArrayList<PeerAndSpeed> sortedPeers = new ArrayList<PeerAndSpeed>();
+		while(peerIds.hasMoreElements()) {
+			int currentPeerId = peerIds.nextElement();
+			ConnectionState currentConnectionState = getConnectionState(currentPeerId);
+			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
+		}
+		
+		Random generator = new Random(); 
+		
+		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index. 
+		while (unsortedPeers.size() > 0) {
+			double shortestDelay = Integer.MAX_VALUE;
+			int shortestDelayPeerId = 0;
+			for (int i = 0; i < unsortedPeers.size(); ++i) {
+				if (unsortedPeers.get(i).peerAndSpeedSpeed < shortestDelay) {
+					shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
+					shortestDelayPeerId = unsortedPeers.get(i).peerAndSpeedId;
+				} else if (unsortedPeers.get(i).peerAndSpeedSpeed == shortestDelay) {
+					int tieBreaker  = generator.nextInt(2);
+					if (tieBreaker == 0) {
+						shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
+						shortestDelayPeerId = unsortedPeers.get(i).peerAndSpeedId;
+					}
+				}
+			}
+			
+			sortedPeers.add(unsortedPeers.get(shortestDelayPeerId));
+			unsortedPeers.remove(shortestDelayPeerId);
+		}
 	}
 	
 	public synchronized void setConnectionState(Integer peerId, ConnectionState connectionState) {

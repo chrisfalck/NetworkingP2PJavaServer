@@ -11,6 +11,7 @@ import java.util.BitSet;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.primitives.Ints;
+import com.networking.UF.BitfieldUtils;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
@@ -36,6 +37,14 @@ public class Client implements Runnable {
 	
 	public boolean haveReceivedHandshake() {
 		return this.connectionState.haveReceivedHandshake();
+	}
+	
+	public void setInterested(boolean interested) {
+		this.connectionState.setInterested(interested);;
+	}
+	
+	public void setServerBitfield(BitSet serverBitset) {
+		connectionState.setBitfield(serverBitset);
 	}
 	
 	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
@@ -77,15 +86,27 @@ public class Client implements Runnable {
 		if (!connectionState.haveReceivedHandshake()) {
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
+
 		} else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
 			System.out.println("Building bitfield message to send to server.");
 			BitSet bitfield = fileManager.getBitfield();
 			int messageLength = 1 + bitfield.size();
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
+
 		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
-			System.out.println("Waiting for further implementation.");
-			while(true) {}
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+
+			if (indexOfMissingPiece != -1) {
+				// We want a piece from the Server. 
+				return new RegularMessage(1, MessageType.interested, null);
+			} else {
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+			
+		// Starts here after initialization. 
+		} else {
+			
 		}
 		
 		return null;
@@ -96,7 +117,6 @@ public class Client implements Runnable {
 		try{
 			
 			// Time for all servers to start before clients start sending messages. 
-			TimeUnit.SECONDS.sleep(8);
 
 			// Create a socket to connect to the server.
 			System.out.println("Client from peer " + fileManager.getThisPeerIdentifier() + " connecting to " + this.serverAddress + " on port " + this.portNumber);

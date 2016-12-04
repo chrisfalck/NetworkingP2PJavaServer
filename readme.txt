@@ -23,3 +23,12 @@ Client: Having completed the handshake, the client sends a bitfield message to t
 Server: The server receives the bitfield message and updates the client's connection state object. 
 		The server then sends a return bitfield message to the client. 
 		
+Client: After receiving the bitfield message from the server, the client compares bitfields, and sends either an interested
+		or not interested message. 
+Server: The server sees if the client is unchoked or choked. The choked or unchoked state of a client is determined every 
+		n seconds of the unchoking interval. 
+		If the client is unchoked, the server sends an interested message. 
+		If the client is choked, the server sends a not interested message. 
+		
+		
+		

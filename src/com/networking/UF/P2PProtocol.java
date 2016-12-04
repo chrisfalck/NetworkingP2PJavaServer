@@ -181,10 +181,26 @@ public class P2PProtocol implements Protocol {
 		// Interested.
 		case 2:
 
+			InterestedMessageHandler interestedMessageHandler;
+			if (myClient != null) {
+				interestedMessageHandler = new InterestedMessageHandler(myClient);
+			} else {
+				interestedMessageHandler = new InterestedMessageHandler(myServer, connectedPeerId);
+			}
+			interestedMessageHandler.receiveMessage(regularMessage);
+
 			break;
 
 		// Not Interested.
 		case 3:
+			
+			UninterestedMessageHandler uninterestedMessageHandler;
+			if (myClient != null) {
+				uninterestedMessageHandler = new UninterestedMessageHandler(myClient);
+			} else {
+				uninterestedMessageHandler = new UninterestedMessageHandler(myServer, connectedPeerId);
+			}
+			uninterestedMessageHandler.receiveMessage(regularMessage);
 
 			break;
 

@@ -21,11 +21,16 @@ public class RegularMessage implements Message {
 	public byte[] getMessagePayload() {
 		return messagePayload;
 	}
-
+	
 	public byte[] toByteArray() {
-        byte[] messageLengthBytes = Ints.toByteArray(messageLength);
         byte[] lastByteOfConvertedMessageType = new byte[] {Ints.toByteArray(messageType)[3]};
-
+        byte[] lastByteOfMessageLength = new byte[] {Ints.toByteArray(1)[3]};
+        
+		if (messagePayload == null) {
+			return Bytes.concat(lastByteOfMessageLength, lastByteOfConvertedMessageType);
+		}
+		
+        byte[] messageLengthBytes = Ints.toByteArray(messageLength);
         return Bytes.concat(messageLengthBytes, lastByteOfConvertedMessageType, messagePayload);
     }
     
