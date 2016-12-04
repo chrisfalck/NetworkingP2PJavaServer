@@ -1,11 +1,10 @@
 package com.networking.UF.server;
 
-import com.networking.UF.CommonConfig;
-import com.networking.UF.ConfigParser;
 import com.networking.UF.FileManager;
+import com.networking.UF.Peer;
+import com.networking.UF.client.Client;
 
 import java.io.IOException;
-import java.util.Enumeration;
 
 import static org.junit.Assert.*;
 
@@ -14,10 +13,16 @@ import static org.junit.Assert.*;
  */
 public class ServerTest {
 
+    private Peer peer;
+
     private Server server;
-    private ConnectionState connectionState1;
-    private ConnectionState connectionState2;
-    private ConnectionState connectionState3;
+    private ConnectionState clientConnectionState1;
+    private ConnectionState clientConnectionState2;
+    private ConnectionState clientConnectionState3;
+
+    private ConnectionState serverConnectionState1;
+    private ConnectionState serverConnectionState2;
+    private ConnectionState serverConnectionState3;
 
     @org.junit.Before
     public void Setup() {
@@ -27,16 +32,33 @@ public class ServerTest {
         } catch (IOException e) {
             System.out.println("Couldn't read file");
         }
-        server = new Server();
-        connectionState1 = new ConnectionState(1);
-        connectionState1.setConnectionSpeed(5);
-        server.setConnectionState(1, connectionState1);
-        connectionState2 = new ConnectionState(2);
-        connectionState2.setConnectionSpeed(10);
-        server.setConnectionState(2, connectionState2);
-        connectionState3 = new ConnectionState(3);
-        connectionState3.setConnectionSpeed(15);
-        server.setConnectionState(3, connectionState3);
+        peer = new Peer(5);
+
+        clientConnectionState1 = new ConnectionState(1);
+        clientConnectionState1.setConnectionSpeed(5);
+        Client client1 = new Client("", 4000, 1, peer);
+        client1.setConnectionState(clientConnectionState1);
+        peer.addClient(client1);
+
+        clientConnectionState2 = new ConnectionState(2);
+        clientConnectionState2.setConnectionSpeed(10);
+        Client client2 = new Client("", 4000, 2, peer);
+        client2.setConnectionState(clientConnectionState2);
+        peer.addClient(client2);
+
+        clientConnectionState3 = new ConnectionState(3);
+        clientConnectionState3.setConnectionSpeed(15);
+        Client client3 = new Client("", 4000, 3, peer);
+        client3.setConnectionState(clientConnectionState3);
+        peer.addClient(client3);
+
+        server = new Server(peer);
+        serverConnectionState1 = new ConnectionState(1);
+        server.setConnectionState(1, serverConnectionState1);
+        serverConnectionState2 = new ConnectionState(2);
+        server.setConnectionState(2, clientConnectionState2);
+        serverConnectionState3 = new ConnectionState(3);
+        server.setConnectionState(3, clientConnectionState3);
     }
 
     @org.junit.Test
@@ -44,16 +66,16 @@ public class ServerTest {
         server.setNumPreferredNeighbors(2);
         server.updatePreferredNeighbors();
         // Only the connection with the largest delay should be choked
-        assertFalse(connectionState1.isChoked());
-        assertFalse(connectionState2.isChoked());
-        assertTrue(connectionState3.isChoked());
+        assertTrue(clientConnectionState1.isChoked());
+        assertFalse(clientConnectionState2.isChoked());
+        assertFalse(clientConnectionState3.isChoked());
 
         ConnectionState connectionState4 = new ConnectionState(4);
         connectionState4.setConnectionSpeed(10);
         server.setConnectionState(4, connectionState4);
         server.updatePreferredNeighbors();
         // In the case of a tie, only one should be choked
-        assertTrue(connectionState2.isChoked() ^ connectionState4.isChoked());
+        assertTrue(clientConnectionState2.isChoked() ^ connectionState4.isChoked());
     }
 
 }

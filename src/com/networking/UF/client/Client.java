@@ -36,6 +36,26 @@ public class Client implements Runnable {
 
 	// Track this client's state.
 	private ConnectionState connectionState;
+
+	/**
+	 * Return this client's server
+	 * @return the peerID of the server this client is connected to
+	 */
+	public int getServerPeerId() {
+		return this.serverPeerId;
+	}
+
+	/**
+	 * Return this client's ConnectionState
+	 * @return the ConnectionState of this client
+	 */
+	public ConnectionState getConnectionState() {
+		return this.connectionState;
+	}
+
+	public void setConnectionState(ConnectionState connectionState) {
+		this.connectionState = connectionState;
+	}
 	
 	public boolean haveReceivedHandshake() {
 		return this.connectionState.haveReceivedHandshake();
