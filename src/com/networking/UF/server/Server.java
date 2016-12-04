@@ -40,6 +40,25 @@ public class Server implements Runnable {
 		}
 	}
 	
+	public void updateOptimisticallyUnchokedNeighbor() {
+		Random generator = new Random(); 
+		try {
+			int randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+			while (true) {
+				boolean isNotPreferredNeighbor = (connectionStates.get(randomIndex).isChoked() == true);
+				boolean isNotOwnPeer = (connectionStates.get(randomIndex).getPeerId() != fileManager.getThisPeerIdentifier());
+				if (isNotOwnPeer && isNotPreferredNeighbor) break;
+				else {
+					randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+				}
+			}
+
+			connectionStates.get(randomIndex).setOptimisticallyUnchoked(true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void updatePreferredNeighbors() {
 		Enumeration<Integer> peerIds = connectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
