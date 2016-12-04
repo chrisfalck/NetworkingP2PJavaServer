@@ -68,14 +68,14 @@ public class Peer {
     				System.out.println("Updating preferred neighbors.");
     				myPeerServer.updatePreferredNeighbors();
     			}
-    		}, 10 * 1000, timeBetweenUnchoked * 1000);
+    		}, 20 * 1000, timeBetweenUnchoked * 1000);
     		
     		optimisticChokingTimer.schedule(new TimerTask() {
 				public void run() {
     				System.out.println("Updating optimistically unchoked neighbor.");
 					myPeerServer.updateOptimisticallyUnchokedNeighbor();
 				}
-			}, 10 * 1000, timeBetweenOptimisticallyUnchoked * 1000);
+			}, 20 * 1000, timeBetweenOptimisticallyUnchoked * 1000);
     		
     		while (true) {}
 
