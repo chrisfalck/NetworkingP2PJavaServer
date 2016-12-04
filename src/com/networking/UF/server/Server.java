@@ -24,7 +24,8 @@ public class Server implements Runnable {
 	private static final int sPort = 6009;   //The server will be listening on this port number
 	static FileManager fileManager = FileManager.getInstance();
 	static Logger logger = Logger.getInstance();
-	
+	private int numPreferredNeighbors = 0;
+
 	ConcurrentHashMap<Integer, ConnectionState> connectionStates = new ConcurrentHashMap<Integer, ConnectionState>();
 	
 	public ConnectionState getConnectionState(Integer peerId) {
@@ -49,17 +50,18 @@ public class Server implements Runnable {
 			ConnectionState currentConnectionState = getConnectionState(currentPeerId);
 			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 		}
-		
-		Random generator = new Random(); 
-		
-		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index. 
+
+		Random generator = new Random();
+
+		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index.
 		while (unsortedPeers.size() > 0) {
 			double shortestDelay = Integer.MAX_VALUE;
 			int shortestDelayPeerId = 0;
+			int shortestDelayPeerIdIndex = 0;
 			for (int i = 0; i < unsortedPeers.size(); ++i) {
 				if (unsortedPeers.get(i).peerAndSpeedSpeed < shortestDelay) {
 					shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
-					shortestDelayPeerId = unsortedPeers.get(i).peerAndSpeedId;
+					shortestDelayPeerIdIndex = i;
 				} else if (unsortedPeers.get(i).peerAndSpeedSpeed == shortestDelay) {
 					int tieBreaker  = generator.nextInt(2);
 					if (tieBreaker == 0) {
@@ -68,18 +70,19 @@ public class Server implements Runnable {
 					}
 				}
 			}
-			
-			sortedPeers.add(unsortedPeers.get(shortestDelayPeerId));
-			unsortedPeers.remove(shortestDelayPeerId);
+			sortedPeers.add(unsortedPeers.get(shortestDelayPeerIdIndex));
+			unsortedPeers.remove(shortestDelayPeerIdIndex);
 		}
-		
+
 		try {
-			int numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
-			for (int i = 0; i < ConfigParser.parsePeerInfoFile().getConfigLength(); ++i) {
+			if (numPreferredNeighbors == 0) {
+				numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
+			}
+			for (int i = 0; i < connectionStates.size(); ++i) {
 				if (i < numPreferredNeighbors) {
-					connectionStates.get(i).setChoked(false);
+					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
 				} else {
-					connectionStates.get(i).setChoked(true);
+					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 				}
 			}
 		} catch (IOException e) {
@@ -90,6 +93,10 @@ public class Server implements Runnable {
 	public synchronized void setConnectionState(Integer peerId, ConnectionState connectionState) {
 		connectionStates.put(peerId, connectionState);
 		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + " updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
+	}
+
+	public void setNumPreferredNeighbors(int numPreferredNeighbors) {
+		this.numPreferredNeighbors = numPreferredNeighbors;
 	}
 
 	public void run() {

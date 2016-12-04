@@ -3,5 +3,6 @@ NetworkingP2PJavaServer/.project
 NetworkingP2PJavaServer/.settings/
 NetworkingP2PJavaServer/.classpath
 /target/
-.idea
+.idea/
 *.iml
+peer_*/
