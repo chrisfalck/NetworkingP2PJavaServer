@@ -9,6 +9,7 @@ public class ConnectionState {
 	private boolean haveReceivedBitfield = false;
 	private boolean choked = true;
 	private boolean interested = false;
+	private boolean hasReceivedPiece = false;
 	private BitSet bitfield = null;
 	private int connectionSpeed = 0;
 	
@@ -63,6 +64,12 @@ public class ConnectionState {
 	}
 	public void setBitfield(BitSet bitfield) {
 		this.bitfield = bitfield;
+	}
+	public boolean getHasReceivedPiece() {
+		return hasReceivedPiece;
+	}
+	public void setHasReceivedPiece(boolean hasReceivedPiece) {
+		this.hasReceivedPiece = hasReceivedPiece;
 	}
 	
 }

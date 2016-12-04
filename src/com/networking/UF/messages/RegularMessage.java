@@ -1,5 +1,8 @@
 package com.networking.UF.messages;
 
+import java.util.Arrays;
+import java.util.BitSet;
+
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 
@@ -33,6 +36,17 @@ public class RegularMessage implements Message {
         byte[] messageLengthBytes = Ints.toByteArray(messageLength);
         return Bytes.concat(messageLengthBytes, lastByteOfConvertedMessageType, messagePayload);
     }
+	
+	public byte[] getPieceIndex(BitSet messagePayload){
+		byte[] pieceIndex = null;
+		pieceIndex = Arrays.copyOfRange(messagePayload.toByteArray(),1,4);
+		return pieceIndex;
+	}
+	
+	public byte[] getPieceContent(BitSet messagePayload){
+		byte[] pieceContent = Arrays.copyOfRange(messagePayload.toByteArray(),5,messagePayload.toByteArray().length);
+		return pieceContent;	
+	}
     
     public String getMessageType() {
 		switch (this.messageType) {

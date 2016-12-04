@@ -54,7 +54,14 @@ public class Client implements Runnable {
 	public void setHaveReceivedHandshake(boolean haveReceivedHandshake) {
 		this.connectionState.setHaveReceivedHandshake(haveReceivedHandshake);
 	}
-
+	
+	public void setHasReceivedPiece(boolean haveReceivedPiece){
+		this.connectionState.setHasReceivedPiece(haveReceivedPiece);
+	}
+	
+	public void setChoked(boolean isChoked){
+		this.connectionState.setChoked(isChoked);
+	}
 	/**
 	 * Steps for to follow P2P Protocol.
 	 * Establish a TCP connection with the server and log its creation.
