@@ -77,9 +77,9 @@ public class Server implements Runnable {
 			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 		}
 
-		Random generator = new Random();
 
 		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index.
+		Random generator = new Random();
 		while (unsortedPeers.size() > 0) {
 			double shortestDelay = Integer.MAX_VALUE;
 			int shortestDelayPeerId = 0;
