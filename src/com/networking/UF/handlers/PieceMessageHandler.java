@@ -1,5 +1,7 @@
 package com.networking.UF.handlers;
 
+import java.util.BitSet;
+
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -25,6 +27,12 @@ public class PieceMessageHandler implements MessageHandler {
 
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
+    	
+    	BitSet filePiece = BitSet.valueOf(messageCast.getMessagePayload());
+    	byte[] filePieceIndex = messageCast.getPieceIndex(filePiece);
+    	byte[] filePieceContent = messageCast.getPieceContent(filePiece);
+    	
+    	
     	if(myClient != null){
     		myClient.setHasReceivedPiece(true);
     		
