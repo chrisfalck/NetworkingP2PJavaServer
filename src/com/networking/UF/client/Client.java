@@ -124,6 +124,7 @@ public class Client implements Runnable {
 		try{
 			
 			// Time for all servers to start before clients start sending messages. 
+			TimeUnit.SECONDS.sleep(5);
 
 			// Create a socket to connect to the server.
 			System.out.println("Client from peer " + fileManager.getThisPeerIdentifier() + " connecting to " + this.serverAddress + " on port " + this.portNumber);
