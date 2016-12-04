@@ -15,6 +15,18 @@ public class ConnectionState {
 	private BitSet bitfield = null;
 	private int connectionSpeed = 0;
 	
+	public String toString() {
+		return new String("Connection state for peerId: " + peerId + "\n" +
+						  "haveReceivedHandshake: " + haveReceivedHandshake + "\n" +
+						  "hasReceivedPiece: " + hasReceivedPiece + "\n" + 
+						  "haveReceivedBitfield " + haveReceivedBitfield + "\n" +
+						  "choked: " + choked + "\n" +
+						  "optimisticallyUnchoked: " + optimisticallyUnchoked + "\n" + 
+						  "connectionSpeed: " + connectionSpeed + "\n" + 
+						  "interested: " + interested + "\n" + 
+						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
+	}
+	
 	public int getPeerId() {
 		return peerId;
 	}
@@ -42,16 +54,6 @@ public class ConnectionState {
 	public ConnectionState(int peerId) {
 		this.peerId = peerId;
 	}
-	
-	public String toString() {
-		return new String("Connection state for peerId: " + peerId + "\n" +
-						  "haveReceivedHandshake: " + haveReceivedHandshake + "\n" +
-						  "haveReceivedBitfield " + haveReceivedBitfield + "\n" +
-						  "choked: " + choked + "\n" +
-						  "interested: " + interested + "\n" + 
-						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
-	}
-	
 	
 	public boolean haveReceivedBitfield() {
 		return haveReceivedBitfield;
