@@ -58,6 +58,8 @@ public class Peer {
     		int timeBetweenUnchoked = ConfigParser.parseCommonFile().getUnchokingInterval();
     		int timeBetweenOptimisticallyUnchoked = ConfigParser.parseCommonFile().getOptimisticUnchokingInterval();
     		
+    		System.out.println(timeBetweenOptimisticallyUnchoked + " " + timeBetweenUnchoked);
+    		
     		Timer chokingTimer = new Timer();
     		Timer optimisticChokingTimer = new Timer();
     		
@@ -66,14 +68,14 @@ public class Peer {
     				System.out.println("Updating preferred neighbors.");
     				myPeerServer.updatePreferredNeighbors();
     			}
-    		}, 0, timeBetweenUnchoked);
+    		}, 10 * 1000, timeBetweenUnchoked * 1000);
     		
     		optimisticChokingTimer.schedule(new TimerTask() {
 				public void run() {
     				System.out.println("Updating optimistically unchoked neighbor.");
 					myPeerServer.updateOptimisticallyUnchokedNeighbor();
 				}
-			}, 0, timeBetweenOptimisticallyUnchoked);
+			}, 10 * 1000, timeBetweenOptimisticallyUnchoked * 1000);
     		
     		while (true) {}
 
