@@ -44,17 +44,24 @@ public class Server implements Runnable {
 	public void updateOptimisticallyUnchokedNeighbor() {
 		Random generator = new Random(); 
 		try {
-			int randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+			ArrayList<Integer> peerIds = new ArrayList<Integer>();
+
+			Enumeration<Integer> connectionStateKeys = connectionStates.keys();
+			while(connectionStateKeys.hasMoreElements()) {
+				peerIds.add(connectionStates.get(connectionStateKeys.nextElement()).getPeerId());
+			}
+
+			int randomPeerId = peerIds.get(generator.nextInt(peerIds.size()));
 			while (true) {
-				boolean isNotPreferredNeighbor = (connectionStates.get(randomIndex).isChoked() == true);
-				boolean isNotOwnPeer = (connectionStates.get(randomIndex).getPeerId() != fileManager.getThisPeerIdentifier());
+				boolean isNotPreferredNeighbor = (connectionStates.get(randomPeerId).isChoked() == true);
+				boolean isNotOwnPeer = (connectionStates.get(randomPeerId).getPeerId() != fileManager.getThisPeerIdentifier());
 				if (isNotOwnPeer && isNotPreferredNeighbor) break;
 				else {
-					randomIndex = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
+					randomPeerId = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
 				}
 			}
 
-			connectionStates.get(randomIndex).setOptimisticallyUnchoked(true);
+			connectionStates.get(randomPeerId).setOptimisticallyUnchoked(true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

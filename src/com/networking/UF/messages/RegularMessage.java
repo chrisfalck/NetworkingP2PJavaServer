@@ -27,15 +27,17 @@ public class RegularMessage implements Message {
 	
 	public byte[] toByteArray() {
         byte[] lastByteOfConvertedMessageType = new byte[] {Ints.toByteArray(messageType)[3]};
-        byte[] lastByteOfMessageLength = new byte[] {Ints.toByteArray(1)[3]};
         
 		if (messagePayload == null) {
-			return Bytes.concat(lastByteOfMessageLength, lastByteOfConvertedMessageType);
+			return Bytes.concat(Ints.toByteArray(1), lastByteOfConvertedMessageType);
 		}
 		
         byte[] messageLengthBytes = Ints.toByteArray(messageLength);
         return Bytes.concat(messageLengthBytes, lastByteOfConvertedMessageType, messagePayload);
     }
+	
+	
+	
 	
 	public byte[] getPieceIndex(BitSet messagePayload){
 		byte[] pieceIndex = null;
@@ -47,6 +49,11 @@ public class RegularMessage implements Message {
 		byte[] pieceContent = Arrays.copyOfRange(messagePayload.toByteArray(),5,messagePayload.toByteArray().length);
 		return pieceContent;	
 	}
+	
+	
+	
+	
+	
     
     public String getMessageType() {
 		switch (this.messageType) {
