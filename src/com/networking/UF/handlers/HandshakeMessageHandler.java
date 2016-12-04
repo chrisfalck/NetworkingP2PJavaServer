@@ -31,7 +31,6 @@ public class HandshakeMessageHandler implements MessageHandler {
 			return false;
 
 		HandshakeMessage messageCast = (HandshakeMessage) message;
-		System.out.println("Handling handshake message from peer: " + messageCast.getPeerId());
 
 		// This is so non HandshakeMessage(s) have access to the connected peer
 		// id.
@@ -41,9 +40,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 		// Server handler.
 		if (myClient != null) {
 			myClient.setHaveReceivedHandshake(true);
-			System.out.println("Client setting have received handshake to: " + myClient.haveReceivedHandshake());
 		} else if (myServer != null){
-			System.out.println("Server receiving handshake request.");
 			ConnectionState connectionState = myServer.getConnectionState(messageCast.getPeerId());
 
 			// If a connection state doesn't already exist for this peer id, create one.

@@ -1,5 +1,6 @@
 package com.networking.UF.handlers;
 
+import com.networking.UF.FileManager;
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -26,8 +27,10 @@ public class InterestedMessageHandler implements MessageHandler {
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
     	if (myClient != null) {
+    		System.out.println("Client " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message.");
     		myClient.setInterested(true);
     	} else {
+    		System.out.println("Server " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message from " + peerId);
     		ConnectionState connectionState = myServer.getConnectionState(peerId);
     		connectionState.setInterested(true);
     		myServer.setConnectionState(peerId, connectionState);
