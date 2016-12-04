@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.networking.UF.ConfigParser;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.MessageType;
@@ -70,6 +71,19 @@ public class Server implements Runnable {
 			
 			sortedPeers.add(unsortedPeers.get(shortestDelayPeerId));
 			unsortedPeers.remove(shortestDelayPeerId);
+		}
+		
+		try {
+			int numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
+			for (int i = 0; i < ConfigParser.parsePeerInfoFile().getConfigLength(); ++i) {
+				if (i < numPreferredNeighbors) {
+					connectionStates.get(i).setChoked(false);
+				} else {
+					connectionStates.get(i).setChoked(true);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
