@@ -139,6 +139,7 @@ public class Client implements Runnable {
 	 * @throws InterruptedException
 	 */
 	private Message getNextMessageToSend() throws InterruptedException {
+		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + waiting);
 		if (!connectionState.haveReceivedHandshake()) {
 			// Send Handshake
 			System.out.println("Building handshake message to send to server.");
@@ -154,6 +155,7 @@ public class Client implements Runnable {
 
 		} else if (connectionState.getHasReceivedPiece() == true) {
 			// Let Peer know so it can broadcast its updated bitmap
+			System.out.println("Peer has received piece...client preparing to send Have message.");
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
 			connectionState.setHasReceivedPiece(false);
@@ -177,6 +179,7 @@ public class Client implements Runnable {
 			}
 		} else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
 			// Wait until unchoked to send more request messages
+			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
 			waiting = true;
 		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 			// Send interested / not interested
@@ -187,8 +190,10 @@ public class Client implements Runnable {
 
 			if (indexOfMissingPiece != -1) {
 				// We want a piece from the Server.
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
 				return new RegularMessage(1, MessageType.interested, null);
 			} else {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
 
