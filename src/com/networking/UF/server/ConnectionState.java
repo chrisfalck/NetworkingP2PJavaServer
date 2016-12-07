@@ -14,7 +14,7 @@ public class ConnectionState {
 	private boolean hasReceivedPiece = false;
 	private int fileIndexToSend = -1;
 	private BitSet bitfield = null;
-	private int connectionSpeed = 0;
+	private long connectionSpeed = 0;
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
@@ -45,11 +45,11 @@ public class ConnectionState {
 		this.optimisticallyUnchoked = optimisticallyUnchoked;
 	}
 
-	public int getConnectionSpeed() {
+	public long getConnectionSpeed() {
 		return connectionSpeed;
 	}
 
-	public void setConnectionSpeed(int connectionSpeed) {
+	public void setConnectionSpeed(long connectionSpeed) {
 		this.connectionSpeed = connectionSpeed;
 	}
 

@@ -1,10 +1,14 @@
 package com.networking.UF;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.networking.UF.client.Client;
+import com.networking.UF.server.ConnectionState;
 import com.networking.UF.server.Server;
 
 /**
@@ -19,6 +23,7 @@ public class Peer {
 
     /** Member data */
     private int peerId;
+	private ArrayList<Client> myClients;
 
     /** Populated by the ConfigParser static class */
     CommonConfig commonConfig = null;
@@ -27,14 +32,36 @@ public class Peer {
 
     public Peer(int peerId) {
     	this.peerId = peerId;
+		myClients = new ArrayList<Client>();
     }
+
+	/**
+	 * WARNING: The values of the hashmap this method returns are ConnectionStates for the clients this Peer has spun threads for
+	 *          The keys are the peerIDs of the servers those clients are connected to
+	 */
+	public ConcurrentHashMap<Integer,ConnectionState> getThisPeersClientConnectionStates() {
+		ConcurrentHashMap<Integer,ConnectionState> thisPeersClientConnectionStates = new ConcurrentHashMap<Integer,ConnectionState>();
+		for (Client client: myClients) {
+			thisPeersClientConnectionStates.put(client.getServerPeerId(), client.getConnectionState());
+		}
+		return thisPeersClientConnectionStates;
+	}
+
+	/**
+	 * Currently only used for testing
+	 * @param client
+	 */
+	public void addClient(Client client) {
+		this.myClients.add(client);
+	}
     
     public void start() {
     	try {
     		// Parse config files and store their info in two config objects.
     		this.commonConfig = ConfigParser.parseCommonFile();
     		this.peerInfoConfig = ConfigParser.parsePeerInfoFile();
-    		Server myPeerServer = new Server();
+    		Server myPeerServer = new Server(this);
+    		this.myClients = new ArrayList<Client>();
     		
     		// The server is intended to serve information from this Peer.
     		Thread serverThread = new Thread(myPeerServer, "serverThread");
@@ -50,7 +77,9 @@ public class Peer {
     			}
 
     			// Clients are intended to retrieve information for this Peer.
-    			Thread clientThread = new Thread(new Client(peerInfoConfig.getHostName(i), peerInfoConfig.getListeningPort(i), peerInfoConfig.getPeerId(i)), "clientThread" + i);
+    			Client tempClient = new Client(peerInfoConfig.getHostName(i), peerInfoConfig.getListeningPort(i), peerInfoConfig.getPeerId(i), this);
+    			myClients.add(tempClient);
+    			Thread clientThread = new Thread(tempClient ,"clientThread" + i);
     			clientThread.start();
     			
     		}
