@@ -229,7 +229,7 @@ public class Client implements Runnable {
 				} else {
 
 					Message messageToSend = getNextMessageToSend();
-					System.out.println("Sending" + messageToSend.getMessageType() + "message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
+					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
 
 					p2pProtocol.sendMessage(out, messageToSend);
 
