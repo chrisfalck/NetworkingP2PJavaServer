@@ -180,7 +180,8 @@ public class P2PProtocol implements Protocol {
 
 		// Unchoke.
 		case 1:
-
+			UnchokeMessageHandler unchokeMessageHandler;
+			unchokeMessageHandler = new UnchokeMessageHandler(myClient);
 			break;
 
 		// Interested.

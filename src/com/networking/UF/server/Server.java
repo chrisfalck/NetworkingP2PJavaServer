@@ -65,6 +65,7 @@ public class Server implements Runnable {
 			}
 
 			connectionStates.get(randomPeerId).setOptimisticallyUnchoked(true);
+			connectionStates.get(randomPeerId).setNeedToUpdateOptimisticNeighbor(true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -119,6 +120,7 @@ public class Server implements Runnable {
 				} else {
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 				}
+				connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -182,6 +184,7 @@ public class Server implements Runnable {
 			this.connection = connection;
 			this.myServer = server;
 			this.p2pProtocol = new P2PProtocol(fileManager.getThisPeerIdentifier(), "server", myServer);
+
 		}
 		
 		/**
@@ -204,8 +207,29 @@ public class Server implements Runnable {
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 
 				return bitfieldMessage;
-			} 
-			else if (connectionState.getFileIndexToSend() != -1){
+
+			} else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
+				connectionState.setNeedToUpdatePreferredNeighbors(false);
+				boolean choked = connectionState.isChoked();
+				if (choked) {
+					System.out.println("Building choke message to send to client.");
+					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+
+					return chokeMessage;
+				} else {
+					System.out.println("Building unchoke message to send to client.");
+					RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
+
+					return unchokeMessage;
+				}
+			}
+			else if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
+				System.out.println("Building unchoke message to send to client.");
+				connectionState.setNeedToUpdateOptimisticNeighbor(false);
+				RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
+
+				return unchokeMessage;
+			} else if (connectionState.getFileIndexToSend() != -1){
 				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
 				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
 			}

@@ -157,7 +157,6 @@ public class Client implements Runnable {
 			} else {
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
-			
 		} else if (connectionState.getHasReceivedPiece() == true) {
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
