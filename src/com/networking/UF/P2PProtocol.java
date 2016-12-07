@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import javax.naming.directory.InitialDirContext;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.networking.UF.client.Client;
 import com.networking.UF.handlers.BitfieldMessageHandler;
@@ -130,7 +131,6 @@ public class P2PProtocol implements Protocol {
 		// Otherwise, the 5th byte of the message will be an integer indicating message type.
 		int regularHeader = (int)rawReceivedMessage[4];
 		
-
 		// Check if this is a handshake message.
 		if (handshakeHeader.equals("P2PFILESHARINGPROJ")) {
 

@@ -24,7 +24,7 @@ public class Peer {
     /** Populated by the ConfigParser static class */
     CommonConfig commonConfig = null;
     PeerInfoConfig peerInfoConfig = null;
-    
+    ArrayList<Client> myClients = new ArrayList<Client>();
 
     public Peer(int peerId) {
     	this.peerId = peerId;
@@ -36,7 +36,6 @@ public class Peer {
     		this.commonConfig = ConfigParser.parseCommonFile();
     		this.peerInfoConfig = ConfigParser.parsePeerInfoFile();
     		Server myPeerServer = new Server(this);
-    		ArrayList<Client> myClients = new ArrayList<Client>();
     		
     		// The server is intended to serve information from this Peer.
     		Thread serverThread = new Thread(myPeerServer, "serverThread");
@@ -86,11 +85,16 @@ public class Peer {
     	} catch (Exception exception) {
     		System.err.println("Exception:\n" + exception.toString());
     	}
-
-    	System.exit(0);
     }
     
-        /** Accessor methods */
+    public void broadcastShouldSendHaveMessages(byte[] currentHaveMessageIndexToSend) {
+    	for (Client currClient : myClients) {
+    		currClient.setShouldSendHaveMessage(true);
+    		currClient.setCurrentHaveMessageIndexToSend(currentHaveMessageIndexToSend);
+    	}
+    }
+    
+    /** Accessor methods */
     public int getPeerId() {
         return peerId;
     }

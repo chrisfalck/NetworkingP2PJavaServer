@@ -32,10 +32,9 @@ public class PieceMessageHandler implements MessageHandler {
     	byte[] filePieceIndex = messageCast.getPieceIndex(filePiece);
     	byte[] filePieceContent = messageCast.getPieceContent(filePiece);
     	
-    	
     	if(myClient != null){
     		myClient.setHasReceivedPiece(true);
-    		
+    		myClient.setCurrentHaveMessageIndexToSend(filePieceIndex);
     	}
     	else{
 	    	ConnectionState connectionState = myServer.getConnectionState(peerId);

@@ -33,6 +33,24 @@ public class Client implements Runnable {
 	private int portNumber;
 	private int serverPeerId;
 	Peer myPeer;
+	private boolean shouldSendHaveMessage = false;
+	private byte[] currentHaveMessageIndexToSend;
+	
+	public byte[] getCurrentHaveMessageIndexToSend() {
+		return currentHaveMessageIndexToSend;
+	}
+
+	public void setCurrentHaveMessageIndexToSend(byte[] currentHaveMessageIndexToSend) {
+		this.currentHaveMessageIndexToSend = currentHaveMessageIndexToSend;
+	}
+
+	public boolean isShouldSendHaveMessage() {
+		return shouldSendHaveMessage;
+	}
+
+	public void setShouldSendHaveMessage(boolean shouldSendHaveMessage) {
+		this.shouldSendHaveMessage = shouldSendHaveMessage;
+	}
 
 	// Track this client's state.
 	private ConnectionState connectionState;
@@ -114,9 +132,13 @@ public class Client implements Runnable {
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
 			
-		// Starts here after initialization. 
-		} else if (connectionState.getHasReceivedPiece() == true){
-			
+		} else if (connectionState.getHasReceivedPiece() == true) {
+			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
+			shouldSendHaveMessage = false;
+			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
+		} else if (shouldSendHaveMessage) {
+			shouldSendHaveMessage = false;
+			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
 		}
 		
 		return null;
