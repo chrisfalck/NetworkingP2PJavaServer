@@ -188,12 +188,17 @@ public class Server implements Runnable {
 			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 				System.out.println("Building bitfield message to send to client.");
 				BitSet bitfield = fileManager.getBitfield();
-				int messageLength = 4 + 1 + bitfield.size();
+				int messageLength = 1 + bitfield.toByteArray().length;
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 
 				return bitfieldMessage;
 			} 
-			else {
+			else if (connectionState.getFileIndexToSend() != -1){
+				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
+				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
+			}
+			
+			else{
 				System.out.println("Waiting for further implementation.");
 				while(true){}
 			}

@@ -12,6 +12,7 @@ public class ConnectionState {
 	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
 	private boolean hasReceivedPiece = false;
+	private int fileIndexToSend = -1;
 	private BitSet bitfield = null;
 	private int connectionSpeed = 0;
 	
@@ -24,6 +25,7 @@ public class ConnectionState {
 						  "optimisticallyUnchoked: " + optimisticallyUnchoked + "\n" + 
 						  "connectionSpeed: " + connectionSpeed + "\n" + 
 						  "interested: " + interested + "\n" + 
+						  "fileIndexToSend: " + fileIndexToSend + "\n" +
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
 	}
 	
@@ -90,6 +92,13 @@ public class ConnectionState {
 	}
 	public void setHasReceivedPiece(boolean hasReceivedPiece) {
 		this.hasReceivedPiece = hasReceivedPiece;
+	}
+	public int getFileIndexToSend() {
+		return fileIndexToSend;
+	}
+
+	public void setFileIndexToSend(int fileIndexToSend) {
+		this.fileIndexToSend = fileIndexToSend;
 	}
 	
 }

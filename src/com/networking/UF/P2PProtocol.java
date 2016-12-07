@@ -223,12 +223,9 @@ public class P2PProtocol implements Protocol {
 		// Request.
 		case 6:
 			RequestMessageHandler requestMessageHandler;
-			if(myClient != null){
-				requestMessageHandler = new RequestMessageHandler(myClient);
-			}
-			else{
-				requestMessageHandler = new RequestMessageHandler(myServer, connectedPeerId);
-			}
+			
+			requestMessageHandler = new RequestMessageHandler(myServer, connectedPeerId);
+			
 			requestMessageHandler.receiveMessage(regularMessage);
 			break;
 

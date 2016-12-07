@@ -1,7 +1,9 @@
 package com.networking.UF.handlers;
 
+import java.nio.ByteBuffer;
 import java.util.BitSet;
 
+import com.google.common.primitives.Ints;
 import com.networking.UF.FileManager;
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
@@ -16,11 +18,7 @@ public class RequestMessageHandler implements MessageHandler {
 	Server myServer;
 	Client myClient; 
 	int peerId;
-	private static FileManager fileManager = FileManager.getInstance();
-	
-	public RequestMessageHandler(Client client) {
-		myClient = client;
-	}
+
 	
 	public RequestMessageHandler(Server server, int peerId) {
 		myServer = server;
@@ -31,17 +29,13 @@ public class RequestMessageHandler implements MessageHandler {
     	RegularMessage messageCast = (RegularMessage)message;
     	
     	BitSet filePiece = BitSet.valueOf(messageCast.getMessagePayload());
-    	byte[] filePieceIndex = messageCast.getPieceIndex(filePiece);
-    	byte[] filePieceContent = messageCast.getPieceContent(filePiece);
+    	byte[] filePieceIndex = (messageCast.getPieceIndex(filePiece));
+    	int result = Ints.fromByteArray(filePieceIndex);
     	
-    	if(myClient != null){
-    		myClient.setHasReceivedPiece(true);
-    	}
-    	else{
-    		ConnectionState connectionState = myServer.getConnectionState(peerId);
-    		connectionState.setHasReceivedPiece(true);
-    		myServer.setConnectionState(peerId, connectionState);
-    	}
+    	ConnectionState connectionState = myServer.getConnectionState(peerId);
+    	connectionState.setFileIndexToSend(result);
+    	myServer.setConnectionState(peerId, connectionState);
+    	
     	
     	return false;
     }
