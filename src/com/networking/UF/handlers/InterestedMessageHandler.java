@@ -1,5 +1,7 @@
 package com.networking.UF.handlers;
 
+import java.util.concurrent.TimeUnit;
+
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.client.Client;
@@ -33,7 +35,11 @@ public class InterestedMessageHandler implements MessageHandler {
     		myClient.setInterested(true);
     	} else {
     		System.out.println("Waiting for further implementation.");
-    		while(true){}
+    		try {
+				TimeUnit.MINUTES.sleep(5);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
     		System.out.println("Server " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message from " + peerId);
     		ConnectionState connectionState = myServer.getConnectionState(peerId);
     		connectionState.setInterested(true);

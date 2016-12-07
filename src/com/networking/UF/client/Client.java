@@ -239,7 +239,7 @@ public class Client implements Runnable {
 				if (waiting) {
 					
 					System.out.println("Waiting for further implementation.");
-					while(true){}
+					TimeUnit.MINUTES.sleep(5);
 					p2pProtocol.receiveMessage(in);
 
 					Message messageToSend = getNextMessageToSend();
