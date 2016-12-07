@@ -138,10 +138,12 @@ public class Client implements Runnable {
 	 */
 	private Message getNextMessageToSend() throws InterruptedException {
 		if (!connectionState.haveReceivedHandshake()) {
+			// Send Handshake
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 
 		} else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+			// Send Bitfield
 			System.out.println("Building bitfield message to send to server.");
 			BitSet bitfield = fileManager.getBitfield();
 			int messageLength = 1 + bitfield.size();
@@ -149,6 +151,7 @@ public class Client implements Runnable {
 			return bitfieldMessage;
 
 		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+			// Send interested / not interested
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
 
 			if (indexOfMissingPiece != -1) {
