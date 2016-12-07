@@ -2,6 +2,8 @@ package com.networking.UF.handlers;
 
 import java.util.BitSet;
 
+import com.google.common.primitives.Ints;
+import com.networking.UF.FileManager;
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -15,6 +17,7 @@ public class PieceMessageHandler implements MessageHandler {
 	Server myServer;
 	Client myClient; 
 	int peerId;
+	private static FileManager fileManager = FileManager.getInstance();
 	
 	public PieceMessageHandler(Client client){
 		myClient = client;
@@ -35,12 +38,11 @@ public class PieceMessageHandler implements MessageHandler {
     	if(myClient != null){
     		myClient.setHasReceivedPiece(true);
     		myClient.setCurrentHaveMessageIndexToSend(filePieceIndex);
+    		fileManager.addFilePiece(Ints.fromByteArray(filePieceIndex), filePieceContent);
+    		ConnectionState connectionState = myClient.getConnectionState();
+    		connectionState.setBitfield(fileManager.getUpdatedBitfield());
     	}
-    	else{
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
-	    	connectionState.setHasReceivedPiece(true);
-	    	myServer.setConnectionState(peerId, connectionState);
-    	}
+  
         return false;
     }
 

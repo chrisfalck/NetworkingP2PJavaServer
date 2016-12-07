@@ -1,10 +1,12 @@
 package com.networking.UF;
 
+import java.awt.List;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -204,6 +206,10 @@ public class FileManager {
 			System.out.println("Config files found.");
 		}
 	} 
+	
+	public void addFilePiece(int index, byte[] content){
+		filePieces[index] = content;
+	}
 
 	public byte[] getFilePieceAtIndex(int index) {
 		return filePieces[index];
@@ -223,6 +229,17 @@ public class FileManager {
 
 	public String getCurrentDirectoryPath() {
 		return currentDirectoryPath;
+	}
+	
+	public BitSet getUpdatedBitfield(){
+		BitSet updatedBitfield = new BitSet(filePieces.length);
+		updatedBitfield.clear();
+		for(int i = 0; i < filePieces.length; ++i){
+			if(filePieces[i].length != 0){
+				updatedBitfield.flip(i);
+			}
+		}
+		return updatedBitfield;
 	}
 
 }
