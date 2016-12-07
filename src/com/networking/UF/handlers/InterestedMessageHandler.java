@@ -1,6 +1,7 @@
 package com.networking.UF.handlers;
 
 import com.networking.UF.FileManager;
+import com.networking.UF.Logger;
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -14,6 +15,7 @@ public class InterestedMessageHandler implements MessageHandler {
 	Server myServer;
 	Client myClient; 
 	int peerId;
+	Logger logger = Logger.getInstance();
 	
 	public InterestedMessageHandler(Client client) {
 		myClient = client;
@@ -34,6 +36,7 @@ public class InterestedMessageHandler implements MessageHandler {
     		ConnectionState connectionState = myServer.getConnectionState(peerId);
     		connectionState.setInterested(true);
     		myServer.setConnectionState(peerId, connectionState);
+			logger.logReceiptOfInterestedMessage(peerId);
     	}
         return false;
     }

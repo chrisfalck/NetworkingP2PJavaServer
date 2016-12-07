@@ -170,7 +170,6 @@ public class Client implements Runnable {
 			else{
 				return new RegularMessage(1+4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
 			}
-			
 		} else if (connectionState.getHasReceivedPiece() == true) {
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
