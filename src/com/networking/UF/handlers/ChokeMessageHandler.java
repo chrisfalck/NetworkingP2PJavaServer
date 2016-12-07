@@ -1,5 +1,6 @@
 package com.networking.UF.handlers;
 
+import com.networking.UF.Logger;
 import com.networking.UF.client.Client;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
@@ -13,6 +14,7 @@ public class ChokeMessageHandler implements MessageHandler {
 	Server myServer;
 	Client myClient; 
 	int peerId;
+	Logger logger = Logger.getInstance();
 	
 	public ChokeMessageHandler(Client client){
 		myClient = client;
@@ -26,7 +28,8 @@ public class ChokeMessageHandler implements MessageHandler {
     public boolean receiveMessage(Message message) {
 		RegularMessage messageCast = (RegularMessage)message;
     	if(myClient != null){
-    		myClient.setChoked(true);    		
+			myClient.setChoked(true);
+			logger.logChokingEvent(myClient.getServerPeerId());
     	}
     	else{
 	    	ConnectionState connectionState = myServer.getConnectionState(peerId);

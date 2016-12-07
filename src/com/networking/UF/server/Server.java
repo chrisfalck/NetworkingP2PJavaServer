@@ -66,6 +66,7 @@ public class Server implements Runnable {
 
 			connectionStates.get(randomPeerId).setOptimisticallyUnchoked(true);
 			connectionStates.get(randomPeerId).setNeedToUpdateOptimisticNeighbor(true);
+			logger.logChangeOfOptimisticallyUnchokedNeighbor(connectionStates.get(randomPeerId).getPeerId());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,14 +115,17 @@ public class Server implements Runnable {
 			if (numPreferredNeighbors == 0) {
 				numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
 			}
+			List<Integer> preferredNeighbors = new ArrayList<Integer>();
 			for (int i = 0; i < thisPeersClientConnectionStates.size(); ++i) {
 				if (i < numPreferredNeighbors) {
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
+					preferredNeighbors.add(sortedPeers.get(i).peerAndSpeedId);
 				} else {
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 				}
 				connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 			}
+			logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -196,16 +200,20 @@ public class Server implements Runnable {
 		private Message getNextMessageToSend() throws InterruptedException {
 			ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
 			if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+				// Send Handshake
 				System.out.println("Building handshake message to send to client.");
 
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
 			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
+				// Send Choke / Unchoke
 				connectionState.setNeedToUpdatePreferredNeighbors(false);
 				boolean choked = connectionState.isChoked();
 				if (choked) {
 					System.out.println("Building choke message to send to client.");
 					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+					connectionState.setFileIndexToSend(-1);
+					// Now wait for a request
 					waiting = true;
 
 					return chokeMessage;
@@ -217,6 +225,7 @@ public class Server implements Runnable {
 				}
 			}
 			else if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
+				// Send Choke / Unchoke
 				System.out.println("Building unchoke message to send to client.");
 				connectionState.setNeedToUpdateOptimisticNeighbor(false);
 				RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
@@ -225,7 +234,7 @@ public class Server implements Runnable {
 
 				return unchokeMessage;
 			} else if (connectionState.getFileIndexToSend() != -1){
-				// Handle request message
+				// Send Piece
 				if (connectionState.isChoked()) {
 					System.out.println("Building choke message to send to client.");
 					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
@@ -238,6 +247,7 @@ public class Server implements Runnable {
 					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
 				}
 			} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+				// Send Bitfield
 				connectionState.setHaveReceivedBitfield(false);
 				System.out.println("Building bitfield message to send to client.");
 				BitSet bitfield = fileManager.getBitfield();
