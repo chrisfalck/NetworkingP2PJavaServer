@@ -83,7 +83,9 @@ public class P2PProtocol implements Protocol {
 		Long startTime = System.nanoTime();
 		rawReceivedMessage = (byte[])in.readObject();
 		Long endTime = System.nanoTime();
-		myClient.setDownloadSpeed(rawReceivedMessage.length / (endTime - startTime)); // bytes / nanosecond
+		if (myClient != null) {
+			myClient.setDownloadSpeed(rawReceivedMessage.length / (endTime - startTime)); // bytes / nanosecond
+		}
 
 		
 		if (origin.equals("server")) System.out.println("\n\n\nStart-Server----------------------------------------------------------------------");
