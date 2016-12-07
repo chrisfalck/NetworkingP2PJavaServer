@@ -175,13 +175,22 @@ public class P2PProtocol implements Protocol {
 		switch (regularHeader) {
 		// Choke.
 		case 0:
+			ChokeMessageHandler chokeMessageHandler;
+
+			chokeMessageHandler = new ChokeMessageHandler(myClient);
+
+			chokeMessageHandler.receiveMessage(regularMessage);
 
 			break;
 
 		// Unchoke.
 		case 1:
 			UnchokeMessageHandler unchokeMessageHandler;
+
 			unchokeMessageHandler = new UnchokeMessageHandler(myClient);
+
+			unchokeMessageHandler.receiveMessage(regularMessage);
+
 			break;
 
 		// Interested.

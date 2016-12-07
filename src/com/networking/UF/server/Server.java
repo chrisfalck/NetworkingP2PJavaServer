@@ -199,21 +199,14 @@ public class Server implements Runnable {
 				System.out.println("Building handshake message to send to client.");
 
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
-			} 
-			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
-				System.out.println("Building bitfield message to send to client.");
-				BitSet bitfield = fileManager.getBitfield();
-				int messageLength = 1 + bitfield.toByteArray().length;
-				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-
-				return bitfieldMessage;
-
-			} else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
+			}
+			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
 				connectionState.setNeedToUpdatePreferredNeighbors(false);
 				boolean choked = connectionState.isChoked();
 				if (choked) {
 					System.out.println("Building choke message to send to client.");
 					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+					waiting = true;
 
 					return chokeMessage;
 				} else {
@@ -227,13 +220,32 @@ public class Server implements Runnable {
 				System.out.println("Building unchoke message to send to client.");
 				connectionState.setNeedToUpdateOptimisticNeighbor(false);
 				RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
+				// Now wait for a request
+				waiting = true;
 
 				return unchokeMessage;
 			} else if (connectionState.getFileIndexToSend() != -1){
-				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
-				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
+				// Handle request message
+				if (connectionState.isChoked()) {
+					System.out.println("Building choke message to send to client.");
+					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+
+					return chokeMessage;
+				} else {
+					connectionState.setFileIndexToSend(-1);
+					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
+
+					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
+				}
+			} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+				connectionState.setHaveReceivedBitfield(false);
+				System.out.println("Building bitfield message to send to client.");
+				BitSet bitfield = fileManager.getBitfield();
+				int messageLength = 1 + bitfield.toByteArray().length;
+				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
+
+				return bitfieldMessage;
 			}
-			
 			else{
 				System.out.println("Waiting for further implementation.");
 				while(true){}

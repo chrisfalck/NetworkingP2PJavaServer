@@ -130,5 +130,4 @@ public class ConnectionState {
 	public void setNeedToUpdateOptimisticNeighbor(boolean needToUpdateOptimisticNeighbor) {
 		this.needToUpdateOptimisticNeighbor = needToUpdateOptimisticNeighbor;
 	}
-	
 }
