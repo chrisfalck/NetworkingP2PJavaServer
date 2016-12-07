@@ -28,7 +28,6 @@ public class Peer {
     /** Populated by the ConfigParser static class */
     CommonConfig commonConfig = null;
     PeerInfoConfig peerInfoConfig = null;
-    ArrayList<Client> myClients = new ArrayList<Client>();
 
     public Peer(int peerId) {
     	this.peerId = peerId;
