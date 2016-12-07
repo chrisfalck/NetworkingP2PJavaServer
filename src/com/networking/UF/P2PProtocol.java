@@ -236,6 +236,11 @@ public class P2PProtocol implements Protocol {
 
 		// Piece.
 		case 7:
+			HaveMessageHandler haveMessageHandler;
+
+			haveMessageHandler = new HaveMessageHandler(myServer, connectedPeerId);
+
+			haveMessageHandler.receiveMessage(regularMessage);
 
 			break;
 
