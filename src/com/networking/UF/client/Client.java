@@ -152,21 +152,7 @@ public class Client implements Runnable {
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
 
-		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
-			// Send interested / not interested
-			// Wait for unchoked message
-			waiting = true;
-			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-			connectionState.setHaveReceivedBitfield(false);
-
-			if (indexOfMissingPiece != -1) {
-				// We want a piece from the Server. 
-				return new RegularMessage(1, MessageType.interested, null);
-			} else {
-				return new RegularMessage(1, MessageType.notInterested, null);
-			}
-		
-		}  else if (connectionState.getHasReceivedPiece() == true) {
+		} else if (connectionState.getHasReceivedPiece() == true) {
 			// Let Peer know so it can broadcast its updated bitmap
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
@@ -176,7 +162,7 @@ public class Client implements Runnable {
 			// broadcast the updated bitmap
 			shouldSendHaveMessage = false;
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		} else if (connectionState.isInterested() == true && connectionState.isChoked() == false) {
+		} else if (connectionState.isInterested() == true && (connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true)) {
 			// Send request messages until choked
 			waiting = false;
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
@@ -187,9 +173,23 @@ public class Client implements Runnable {
 			} else {
 				return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
 			}
-		} else if (connectionState.isChoked() == true) {
+		} else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
 			// Wait until unchoked to send more request messages
 			waiting = true;
+		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+			// Send interested / not interested
+			// Wait for unchoked message
+			waiting = true;
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+			connectionState.setHaveReceivedBitfield(false);
+
+			if (indexOfMissingPiece != -1) {
+				// We want a piece from the Server.
+				return new RegularMessage(1, MessageType.interested, null);
+			} else {
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+
 		}
 		return null;
 	}
