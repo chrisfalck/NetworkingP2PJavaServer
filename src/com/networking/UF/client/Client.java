@@ -160,11 +160,12 @@ public class Client implements Runnable {
 		} else if (connectionState.getHasReceivedPiece() == true) {
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
+			connectionState.setHasReceivedPiece(false);
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
 		} else if (shouldSendHaveMessage) {
 			shouldSendHaveMessage = false;
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		}
+		} 
 		
 		return null;
 	}

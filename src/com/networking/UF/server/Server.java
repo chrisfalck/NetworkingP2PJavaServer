@@ -83,7 +83,9 @@ public class Server implements Runnable {
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
 			ConnectionState currentConnectionState = thisPeersClientConnectionStates.get(currentPeerId);
-			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
+			if(currentConnectionState.isInterested() == true){
+				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
+			}
 		}
 
 
