@@ -41,6 +41,7 @@ public class PieceMessageHandler implements MessageHandler {
     		fileManager.addFilePiece(Ints.fromByteArray(filePieceIndex), filePieceContent);
     		ConnectionState connectionState = myClient.getConnectionState();
     		connectionState.setBitfield(fileManager.getUpdatedBitfield());
+    		myClient.setConnectionState(connectionState);
     	}
   
         return false;

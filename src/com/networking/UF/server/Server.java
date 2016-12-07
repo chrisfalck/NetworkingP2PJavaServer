@@ -234,6 +234,7 @@ public class Server implements Runnable {
 
 				return unchokeMessage;
 			} else if (connectionState.getFileIndexToSend() != -1){
+				waiting = false;
 				// Send Piece
 				if (connectionState.isChoked()) {
 					System.out.println("Building choke message to send to client.");
@@ -243,7 +244,7 @@ public class Server implements Runnable {
 				} else {
 					connectionState.setFileIndexToSend(-1);
 					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
-
+					System.out.println("Building a piece message to send to client");
 					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
 				}
 			} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {

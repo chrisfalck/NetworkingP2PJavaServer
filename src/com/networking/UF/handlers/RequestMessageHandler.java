@@ -28,15 +28,17 @@ public class RequestMessageHandler implements MessageHandler {
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
     	
-    	BitSet filePiece = BitSet.valueOf(messageCast.getMessagePayload());
-    	byte[] filePieceIndex = (messageCast.getPieceIndex(filePiece));
-    	int result = Ints.fromByteArray(filePieceIndex);
+    	if(myServer != null){
     	
-    	ConnectionState connectionState = myServer.getConnectionState(peerId);
-    	connectionState.setFileIndexToSend(result);
-    	myServer.setConnectionState(peerId, connectionState);
+	    	BitSet filePiece = BitSet.valueOf(messageCast.getMessagePayload());
+	    	byte[] filePieceIndex = (messageCast.getPieceIndex(filePiece));
+	    	int result = Ints.fromByteArray(filePieceIndex);
+	    	
+	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
+	    	connectionState.setFileIndexToSend(result);
+	    	myServer.setConnectionState(peerId, connectionState);
     	
-    	
+    	}
     	return false;
     }
 

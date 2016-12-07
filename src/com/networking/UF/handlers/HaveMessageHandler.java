@@ -32,6 +32,7 @@ public class HaveMessageHandler implements MessageHandler {
     	if (myServer != null){
 	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
 	    	connectionState.setHasReceivedHaveMessage(true);
+	    	connectionState.setBitfield(fileManager.getUpdatedBitfield());
 	    	byte[] index = messageCast.getMessagePayload();
 	    	if(fileManager.getFilePieceAtIndex(Ints.fromByteArray(index)).length == 0){
 	    		connectionState.setInterested(true);

@@ -4,6 +4,7 @@ import java.awt.List;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import javax.lang.model.element.VariableElement;
 import javax.xml.bind.annotation.adapters.NormalizedStringAdapter;
 
 import com.google.common.io.Files;
+import com.google.common.primitives.Bytes;
 
 public class FileManager {
 
@@ -187,6 +189,11 @@ public class FileManager {
 //		for (int i = 0; i < bitfield.size(); i++) {
 //			System.out.print(bitfield.get(i) ? "1" : "0");
 //		}
+	}
+	
+	public void reconstructFile() throws IOException {
+		byte[] wholeFile = Bytes.concat(filePieces);
+		Files.write(wholeFile, thisPeerDataFile);
 	}
 	
 	/**
