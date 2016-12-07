@@ -2,6 +2,8 @@ package com.networking.UF.server;
 
 import java.util.BitSet;
 
+import javax.swing.text.DefaultEditorKit.CutAction;
+
 public class ConnectionState {
 	
 	private int peerId;
@@ -15,6 +17,8 @@ public class ConnectionState {
 	private boolean hasReceivedHave = false;
 	private int fileIndexToSend = -1;
 	private BitSet bitfield = null;
+	private boolean waiting = false;
+	private BitSet currentBitfield = null;
 	private long connectionSpeed = 0;
 	
 	public String toString() {
@@ -28,6 +32,8 @@ public class ConnectionState {
 						  "interested: " + interested + "\n" + 
 						  "fileIndexToSend: " + fileIndexToSend + "\n" +
 						  "hasReceivedHave: " + hasReceivedHave + "\n" +
+						  "waiting: " + waiting + "\n" + 
+						  "currentBitfield: " + currentBitfield + "\n" +
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
 	}
 	
@@ -108,8 +114,23 @@ public class ConnectionState {
 	}
 	
 	public void setHasReceivedHaveMessage(boolean b) {
-		this.hasReceivedHave = b;
-		
+		this.hasReceivedHave = b;	
 	}
+	public boolean isWaiting() {
+		return waiting;
+	}
+
+	public void setWaiting(boolean waiting) {
+		this.waiting = waiting;
+	}
+	
+	public void setCurrentBitfield(BitSet bitfield){
+		this.currentBitfield = bitfield;
+	}
+	
+	public BitSet getCurrentBitfield(){
+		return currentBitfield;
+	}
+
 	
 }

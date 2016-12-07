@@ -3,9 +3,11 @@ package com.networking.UF.client;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.TimeUnit;
@@ -156,6 +158,17 @@ public class Client implements Runnable {
 				return new RegularMessage(1, MessageType.interested, null);
 			} else {
 				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+		
+		} else if (connectionState.isInterested() == true && connectionState.isChoked() == false){
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+			
+			if (indexOfMissingPiece == -1){
+				connectionState.setInterested(false);
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+			else{
+				return new RegularMessage(1+4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
 			}
 			
 		} else if (connectionState.getHasReceivedPiece() == true) {
