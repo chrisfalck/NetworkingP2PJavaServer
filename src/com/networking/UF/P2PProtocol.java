@@ -79,12 +79,17 @@ public class P2PProtocol implements Protocol {
 	/** Convert the received byte array into a Message object and pass to the appropriate handler. */
 	public void receiveMessage(ObjectInputStream in) throws Exception {
 
-		// Receive the raw byte array.
+		// Receive the raw byte array and determine the download rate
+		Long startTime = System.nanoTime();
 		rawReceivedMessage = (byte[])in.readObject();
+		Long endTime = System.nanoTime();
+		myClient.setDownloadSpeed(rawReceivedMessage.length / (endTime - startTime)); // bytes / nanosecond
+
 		
 		if (origin.equals("server")) System.out.println("\n\n\nStart-Server----------------------------------------------------------------------");
 
 		if (origin.equals("client")) {
+
 			System.out.println("Received message from server: " + connectedPeerId);
 		} 
 		else {
@@ -223,12 +228,9 @@ public class P2PProtocol implements Protocol {
 		// Request.
 		case 6:
 			RequestMessageHandler requestMessageHandler;
-			if(myClient != null){
-				requestMessageHandler = new RequestMessageHandler(myClient);
-			}
-			else{
-				requestMessageHandler = new RequestMessageHandler(myServer, connectedPeerId);
-			}
+			
+			requestMessageHandler = new RequestMessageHandler(myServer, connectedPeerId);
+			
 			requestMessageHandler.receiveMessage(regularMessage);
 			break;
 

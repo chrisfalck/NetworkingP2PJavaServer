@@ -205,6 +205,9 @@ public class FileManager {
 		}
 	} 
 
+	public byte[] getFilePieceAtIndex(int index) {
+		return filePieces[index];
+	}
 
 	public Integer getThisPeerIdentifier() {
 		return thisPeerIdentifier;

@@ -54,6 +54,26 @@ public class Client implements Runnable {
 
 	// Track this client's state.
 	private ConnectionState connectionState;
+
+	/**
+	 * Return this client's server
+	 * @return the peerID of the server this client is connected to
+	 */
+	public int getServerPeerId() {
+		return this.serverPeerId;
+	}
+
+	/**
+	 * Return this client's ConnectionState
+	 * @return the ConnectionState of this client
+	 */
+	public ConnectionState getConnectionState() {
+		return this.connectionState;
+	}
+
+	public void setConnectionState(ConnectionState connectionState) {
+		this.connectionState = connectionState;
+	}
 	
 	public boolean haveReceivedHandshake() {
 		return this.connectionState.haveReceivedHandshake();
@@ -82,6 +102,11 @@ public class Client implements Runnable {
 	public void setChoked(boolean isChoked){
 		this.connectionState.setChoked(isChoked);
 	}
+
+	public void setDownloadSpeed(long downloadSpeed) {
+		this.connectionState.setConnectionSpeed(downloadSpeed);
+	}
+
 	/**
 	 * Steps for to follow P2P Protocol.
 	 * Establish a TCP connection with the server and log its creation.
@@ -170,7 +195,11 @@ public class Client implements Runnable {
 				System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
 
 				p2pProtocol.sendMessage(out, messageToSend);
+
+
 				p2pProtocol.receiveMessage(in);
+
+
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
 				TimeUnit.SECONDS.sleep(5);
 			}

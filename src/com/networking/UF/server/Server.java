@@ -4,10 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Enumeration;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.networking.UF.ConfigParser;
@@ -40,13 +37,13 @@ public class Server implements Runnable {
 	
 	private class PeerAndSpeed {
 		public int peerAndSpeedId;
-		public int peerAndSpeedSpeed;
-		public PeerAndSpeed(int peerId, int peerSpeed) {
+		public long peerAndSpeedSpeed;
+		public PeerAndSpeed(int peerId, long peerSpeed) {
 			peerAndSpeedId = peerId;
 			peerAndSpeedSpeed = peerSpeed;
 		}
 	}
-	
+
 	public void updateOptimisticallyUnchokedNeighbor() {
 		Random generator = new Random(); 
 		try {
@@ -72,14 +69,20 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Update the list of preferred neighbors for this peer. Preferred neighbors are unchoked so that they can
+	 * request pieces from this peer. Preferred neighbors are determined by the downloading rate of the clients created
+	 * by this peer (the downloading rate of another peer depends on this peer's client's download rate from that peer)
+	 */
 	public void updatePreferredNeighbors() {
-		Enumeration<Integer> peerIds = connectionStates.keys();
+		ConcurrentHashMap<Integer,ConnectionState> thisPeersClientConnectionStates = myPeer.getThisPeersClientConnectionStates();
+		Enumeration<Integer> peerIds = thisPeersClientConnectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
 		ArrayList<PeerAndSpeed> sortedPeers = new ArrayList<PeerAndSpeed>();
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
-			ConnectionState currentConnectionState = getConnectionState(currentPeerId);
+			ConnectionState currentConnectionState = thisPeersClientConnectionStates.get(currentPeerId);
 			unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 		}
 
@@ -87,30 +90,28 @@ public class Server implements Runnable {
 		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index.
 		Random generator = new Random();
 		while (unsortedPeers.size() > 0) {
-			double shortestDelay = Integer.MAX_VALUE;
-			int shortestDelayPeerId = 0;
-			int shortestDelayPeerIdIndex = 0;
+			long connectionSpeed = 0;
+			int fastestPeerIdIndex = 0;
 			for (int i = 0; i < unsortedPeers.size(); ++i) {
-				if (unsortedPeers.get(i).peerAndSpeedSpeed < shortestDelay) {
-					shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
-					shortestDelayPeerIdIndex = i;
-				} else if (unsortedPeers.get(i).peerAndSpeedSpeed == shortestDelay) {
+				if (unsortedPeers.get(i).peerAndSpeedSpeed > connectionSpeed) {
+					connectionSpeed = unsortedPeers.get(i).peerAndSpeedSpeed;
+					fastestPeerIdIndex = i;
+				} else if (unsortedPeers.get(i).peerAndSpeedSpeed == connectionSpeed) {
 					int tieBreaker  = generator.nextInt(2);
 					if (tieBreaker == 0) {
-						shortestDelay = unsortedPeers.get(i).peerAndSpeedSpeed;
-						shortestDelayPeerId = unsortedPeers.get(i).peerAndSpeedId;
+						connectionSpeed = unsortedPeers.get(i).peerAndSpeedSpeed;
 					}
 				}
 			}
-			sortedPeers.add(unsortedPeers.get(shortestDelayPeerIdIndex));
-			unsortedPeers.remove(shortestDelayPeerIdIndex);
+			sortedPeers.add(unsortedPeers.get(fastestPeerIdIndex));
+			unsortedPeers.remove(fastestPeerIdIndex);
 		}
 
 		try {
 			if (numPreferredNeighbors == 0) {
 				numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
 			}
-			for (int i = 0; i < connectionStates.size(); ++i) {
+			for (int i = 0; i < thisPeersClientConnectionStates.size(); ++i) {
 				if (i < numPreferredNeighbors) {
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
 				} else {
@@ -194,12 +195,17 @@ public class Server implements Runnable {
 			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 				System.out.println("Building bitfield message to send to client.");
 				BitSet bitfield = fileManager.getBitfield();
-				int messageLength = 4 + 1 + bitfield.size();
+				int messageLength = 1 + bitfield.toByteArray().length;
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 
 				return bitfieldMessage;
 			} 
-			else {
+			else if (connectionState.getFileIndexToSend() != -1){
+				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
+				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
+			}
+			
+			else{
 				System.out.println("Waiting for further implementation.");
 				while(true){}
 			}

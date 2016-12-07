@@ -12,8 +12,9 @@ public class ConnectionState {
 	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
 	private boolean hasReceivedPiece = false;
+	private int fileIndexToSend = -1;
 	private BitSet bitfield = null;
-	private int connectionSpeed = 0;
+	private long connectionSpeed = 0;
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
@@ -24,6 +25,7 @@ public class ConnectionState {
 						  "optimisticallyUnchoked: " + optimisticallyUnchoked + "\n" + 
 						  "connectionSpeed: " + connectionSpeed + "\n" + 
 						  "interested: " + interested + "\n" + 
+						  "fileIndexToSend: " + fileIndexToSend + "\n" +
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
 	}
 	
@@ -43,11 +45,11 @@ public class ConnectionState {
 		this.optimisticallyUnchoked = optimisticallyUnchoked;
 	}
 
-	public int getConnectionSpeed() {
+	public long getConnectionSpeed() {
 		return connectionSpeed;
 	}
 
-	public void setConnectionSpeed(int connectionSpeed) {
+	public void setConnectionSpeed(long connectionSpeed) {
 		this.connectionSpeed = connectionSpeed;
 	}
 
@@ -90,6 +92,13 @@ public class ConnectionState {
 	}
 	public void setHasReceivedPiece(boolean hasReceivedPiece) {
 		this.hasReceivedPiece = hasReceivedPiece;
+	}
+	public int getFileIndexToSend() {
+		return fileIndexToSend;
+	}
+
+	public void setFileIndexToSend(int fileIndexToSend) {
+		this.fileIndexToSend = fileIndexToSend;
 	}
 	
 }
