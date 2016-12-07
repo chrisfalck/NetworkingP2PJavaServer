@@ -35,6 +35,7 @@ public class Client implements Runnable {
 	Peer myPeer;
 	private boolean shouldSendHaveMessage = false;
 	private byte[] currentHaveMessageIndexToSend;
+	private boolean waiting = false;
 	
 	public byte[] getCurrentHaveMessageIndexToSend() {
 		return currentHaveMessageIndexToSend;
@@ -191,14 +192,24 @@ public class Client implements Runnable {
 				System.out.println("\n\n\nStart-Client----------------------------------------------------------------------");
 				p2pProtocol.reset();
 
-				Message messageToSend = getNextMessageToSend();
-				System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
+				if (waiting) {
+					p2pProtocol.receiveMessage(in);
 
-				p2pProtocol.sendMessage(out, messageToSend);
+					Message messageToSend = getNextMessageToSend();
 
 
-				p2pProtocol.receiveMessage(in);
+					p2pProtocol.sendMessage(out, messageToSend);
 
+				} else {
+
+					Message messageToSend = getNextMessageToSend();
+					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
+
+					p2pProtocol.sendMessage(out, messageToSend);
+
+
+					p2pProtocol.receiveMessage(in);
+				}
 
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
 				TimeUnit.SECONDS.sleep(5);

@@ -172,6 +172,9 @@ public class Server implements Runnable {
 		// The P2PProtocol created for use by this Handler thread. 
 		private P2PProtocol p2pProtocol;
 
+		// Determines whether the Handler should send messages first or receive them
+		private boolean waiting = true;
+
 
 		public Handler(Socket connection, int no, Server server) {
 			this.connection = connection;
@@ -223,15 +226,24 @@ public class Server implements Runnable {
 					while(true)
 					{
 						p2pProtocol.reset();
-						
-						// Wait for the client messages to arrive. 
-						p2pProtocol.receiveMessage(in);
-						
-						Message messageToSend = getNextMessageToSend();
 
-						System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
+						if (waiting) {
+							// Wait for the client messages to arrive.
+							p2pProtocol.receiveMessage(in);
 
-						p2pProtocol.sendMessage(out, messageToSend);
+							Message messageToSend = getNextMessageToSend();
+
+							System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
+
+							p2pProtocol.sendMessage(out, messageToSend);
+						} else {
+							Message messageToSend = getNextMessageToSend();
+
+							p2pProtocol.sendMessage(out, messageToSend);
+
+
+							p2pProtocol.receiveMessage(in);
+						}
 						System.out.println("End-Server------------------------------------------------------------------------\n\n\n");
 					}
 				}
