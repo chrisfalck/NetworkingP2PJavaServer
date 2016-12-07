@@ -153,6 +153,22 @@ public class Client implements Runnable {
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
 
+		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+			// Send interested / not interested
+			// Wait for unchoked message
+			waiting = true;
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+			connectionState.setHaveReceivedBitfield(false);
+
+			if (indexOfMissingPiece != -1) {
+				// We want a piece from the Server.
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
+				return new RegularMessage(1, MessageType.interested, null);
+			} else {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+
 		} else if (connectionState.getHasReceivedPiece() == true) {
 			// Let Peer know so it can broadcast its updated bitmap
 			System.out.println("Peer has received piece...client preparing to send Have message.");
@@ -181,22 +197,6 @@ public class Client implements Runnable {
 			// Wait until unchoked to send more request messages
 			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
 			waiting = true;
-		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
-			// Send interested / not interested
-			// Wait for unchoked message
-			waiting = true;
-			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-			connectionState.setHaveReceivedBitfield(false);
-
-			if (indexOfMissingPiece != -1) {
-				// We want a piece from the Server.
-				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
-				return new RegularMessage(1, MessageType.interested, null);
-			} else {
-				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
-				return new RegularMessage(1, MessageType.notInterested, null);
-			}
-
 		}
 		return null;
 	}
@@ -236,10 +236,10 @@ public class Client implements Runnable {
 					Message messageToSend = getNextMessageToSend();
 					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
 
-					p2pProtocol.sendMessage(out, messageToSend);
-
-
-					p2pProtocol.receiveMessage(in);
+					if (messageToSend != null) {
+						p2pProtocol.sendMessage(out, messageToSend);
+						p2pProtocol.receiveMessage(in);
+					}
 				}
 
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
