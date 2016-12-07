@@ -86,6 +86,8 @@ public class Client implements Runnable {
 		this.connectionState.setInterested(interested);;
 	}
 	
+	// Other fields on the client ConnectionState object are for the client itself.
+	// The bitfield on the client ConnectionState object referrs to the Server. 
 	public void setServerBitfield(BitSet serverBitset) {
 		connectionState.setBitfield(serverBitset);
 	}
@@ -145,7 +147,9 @@ public class Client implements Runnable {
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 
-		} else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+		} 
+		
+		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
 			// Send Bitfield
 			System.out.println("Building bitfield message to send to server.");
 			BitSet bitfield = fileManager.getBitfield();
@@ -153,12 +157,13 @@ public class Client implements Runnable {
 			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 			return bitfieldMessage;
 
-		} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+		} 
+		
+		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 			// Send interested / not interested
 			// Wait for unchoked message
 			waiting = true;
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-			connectionState.setHaveReceivedBitfield(false);
 
 			if (indexOfMissingPiece != -1) {
 				// We want a piece from the Server.
@@ -169,18 +174,24 @@ public class Client implements Runnable {
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
 
-		} else if (connectionState.getHasReceivedPiece() == true) {
+		} 
+		
+		else if (connectionState.getHasReceivedPiece() == true) {
 			// Let Peer know so it can broadcast its updated bitmap
 			System.out.println("Peer has received piece...client preparing to send Have message.");
 			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
 			shouldSendHaveMessage = false;
 			connectionState.setHasReceivedPiece(false);
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		} else if (shouldSendHaveMessage) {
+		} 
+		
+		else if (shouldSendHaveMessage) {
 			// broadcast the updated bitmap
 			shouldSendHaveMessage = false;
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		} else if (connectionState.isInterested() == true && (connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true)) {
+		} 
+		
+		else if (connectionState.isInterested() == true && (connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true)) {
 			// Send request messages until choked
 			waiting = false;
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
@@ -193,7 +204,9 @@ public class Client implements Runnable {
 				System.out.println("Interested in a file piece from " + this.serverAddress);
 				return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
 			}
-		} else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
+		} 
+		
+		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
 			// Wait until unchoked to send more request messages
 			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
 			waiting = true;
@@ -224,6 +237,9 @@ public class Client implements Runnable {
 				p2pProtocol.reset();
 
 				if (waiting) {
+					
+					System.out.println("Waiting for further implementation.");
+					while(true){}
 					p2pProtocol.receiveMessage(in);
 
 					Message messageToSend = getNextMessageToSend();

@@ -205,6 +205,17 @@ public class Server implements Runnable {
 
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
+			
+			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+				// Send Bitfield
+				System.out.println("Building bitfield message to send to client.");
+				BitSet bitfield = fileManager.getBitfield();
+				int messageLength = 1 + bitfield.toByteArray().length;
+				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
+
+				return bitfieldMessage;
+			}
+
 			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
 				// Send Choke / Unchoke
 				connectionState.setNeedToUpdatePreferredNeighbors(false);
@@ -224,6 +235,7 @@ public class Server implements Runnable {
 					return unchokeMessage;
 				}
 			}
+
 			else if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
 				// Send Choke / Unchoke
 				System.out.println("Building unchoke message to send to client.");
@@ -233,7 +245,9 @@ public class Server implements Runnable {
 				waiting = true;
 
 				return unchokeMessage;
-			} else if (connectionState.getFileIndexToSend() != -1){
+			} 
+			
+			else if (connectionState.getFileIndexToSend() != -1){
 				waiting = false;
 				// Send Piece
 				if (connectionState.isChoked()) {
@@ -247,16 +261,9 @@ public class Server implements Runnable {
 					System.out.println("Building a piece message to send to client");
 					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
 				}
-			} else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
-				// Send Bitfield
-				connectionState.setHaveReceivedBitfield(false);
-				System.out.println("Building bitfield message to send to client.");
-				BitSet bitfield = fileManager.getBitfield();
-				int messageLength = 1 + bitfield.toByteArray().length;
-				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 
-				return bitfieldMessage;
-			}
+			} 
+
 			else{
 				System.out.println("Waiting for further implementation.");
 				while(true){}
