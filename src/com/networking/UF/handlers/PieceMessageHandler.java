@@ -40,6 +40,8 @@ public class PieceMessageHandler implements MessageHandler {
     		myClient.setCurrentHaveMessageIndexToSend(filePieceIndex);
     		fileManager.addFilePiece(Ints.fromByteArray(filePieceIndex), filePieceContent);
     	}
+    	
+    	System.out.println("I got a file piece: " + filePieceContent.length);
   
         return false;
     }

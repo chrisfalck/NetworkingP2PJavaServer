@@ -40,6 +40,7 @@ public class RequestMessageHandler implements MessageHandler {
 	    	myServer.setConnectionState(peerId, connectionState);
 
     	}
+
     	return false;
     }
 
