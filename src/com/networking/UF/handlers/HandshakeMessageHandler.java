@@ -46,6 +46,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 			// If a connection state doesn't already exist for this peer id, create one.
 			if (connectionState == null) {
 				connectionState = new ConnectionState(messageCast.getPeerId());
+				connectionState.setWaiting(true);
 			}
 
 			connectionState.setHaveReceivedHandshake(true);
