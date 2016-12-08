@@ -191,7 +191,7 @@ public class Client implements Runnable {
 			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
 		} 
 		
-		else if (connectionState.isInterested() == true && (connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true)) {
+		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true) {
 			// Send request messages until choked
 			waiting = false;
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
