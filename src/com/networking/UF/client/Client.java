@@ -245,7 +245,7 @@ public class Client implements Runnable {
 
 
 					p2pProtocol.sendMessage(out, messageToSend);
-					TimeUnit.MINUTES.sleep(10);
+
 				} else {
 
 					Message messageToSend = getNextMessageToSend();
@@ -258,7 +258,6 @@ public class Client implements Runnable {
 				}
 
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
-				TimeUnit.SECONDS.sleep(5);
 			}
 		}
 		catch (Exception e) {
