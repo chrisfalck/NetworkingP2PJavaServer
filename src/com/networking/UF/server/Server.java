@@ -209,55 +209,65 @@ public class Server implements Runnable {
 		 */
 		private Message getNextMessageToSend() throws InterruptedException {
 			ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
+			
+			// If we haven't send a handshake message. 
 			if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
 				// Send Handshake
 				System.out.println("Building handshake message to send to client.");
-
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
 			
+			// If we haven't send a bitfield message. 
 			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveSentBitfield) {
-				// Send Bitfield
 				System.out.println("Building bitfield message to send to client.");
 				BitSet bitfield = fileManager.getBitfield();
 				int messageLength = 1 + bitfield.toByteArray().length;
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 				haveSentBitfield = true;
 				return bitfieldMessage;
-
-			} else if (connectionState.getFileIndexToSend() != -1) {
+			} 
+			
+			// If we have a file index we should send in response to a request message. 
+			else if (connectionState.getFileIndexToSend() != -1) {
 				connectionState.setWaiting(true);
-				// Send Piece
+				
+				// If the client asked us for a piece but was choked before we replied. 
 				if (connectionState.isChoked()) {
 					System.out.println("Building choke message to send to client.");
-					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
-
-					return chokeMessage;
-				} else {
+					return new RegularMessage(1, MessageType.choke, null);
+				} 
+				// We received a request message and the client is not choked. 
+				else {
 					int fileIndex = connectionState.getFileIndexToSend();
 					connectionState.setFileIndexToSend(-1);
 					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
-					System.out.println("Building a piece message to send to client");
+					System.out.println("Preparing a piece message to send to client");
 					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));
 				}
-
 			}
 
+			// Determine whether we should send a choke or unchoke message based on who 
+			// the new preferred neighbors are. 
 			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
-				// Send Choke / Unchoke
 				connectionState.setNeedToUpdatePreferredNeighbors(false);
+
 				boolean choked = connectionState.isChoked();
+
 				if (choked) {
-					System.out.println("Building choke message to send to client.");
+					System.out.println("Building choke message to send to client with state:\n" + connectionState.toString());
+
 					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
+
 					connectionState.setFileIndexToSend(-1);
-					// Now wait for a request
-					connectionState.setWaiting(true);
+
+					// The server should no longer be waiting for messsages from this client. 
+					connectionState.setWaiting(false);
 
 					return chokeMessage;
 				} else {
-					connectionState.setWaiting(false);
-					System.out.println("Building unchoke message to send to client.");
+					// The server should now wait for request messages from this client. 
+					connectionState.setWaiting(true);
+					System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
 					RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
 
 					return unchokeMessage;
@@ -266,15 +276,14 @@ public class Server implements Runnable {
 
 			else if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
 				// Send Choke / Unchoke
-				System.out.println("Building unchoke message to send to client.");
+				System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
 				connectionState.setNeedToUpdateOptimisticNeighbor(false);
 				RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
 				// Now wait for a request
 				connectionState.setWaiting(true);
 
 				return unchokeMessage;
-			}
-			else{
+			} else {
 				return null;
 			}
 		}
@@ -293,47 +302,35 @@ public class Server implements Runnable {
 						ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
 						p2pProtocol.reset();
 						
-						System.out.println("Connected peer: " + p2pProtocol.getConnectedPeerId());
-//								+ " is waiting: " + connectionState.isWaiting());
-						
 						if (connectionState == null || connectionState.isWaiting()) {
-							System.out.println("Inside the connection state null block.");
+							System.out.println("Inside the server waiting block.");
 							
-							// Wait for the client messages to arrive.
 							p2pProtocol.receiveMessage(in);
 
 							Message messageToSend = getNextMessageToSend();
-
-							System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
-
 							if (messageToSend != null) {
+								System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
 								p2pProtocol.sendMessage(out, messageToSend);
 							}
 						} else {
+							System.out.println("Inside the server sending block.");
 
-							
+							// Wait until (We need to send choke or unchoke messages) OR (We receive a have message).
 							System.out.println("Beginning the in.available() wait loop.");
 							while (in.available() == 0) {
-								if (connectionState.isNeedToUpdateOptimisticNeighbor() || connectionState.isNeedToUpdatePreferredNeighbors()) {
-									break;
-								}
+								if (connectionState.isNeedToUpdateOptimisticNeighbor() || connectionState.isNeedToUpdatePreferredNeighbors()) break;
 							}
 							System.out.println("Exiting the in.available() wait loop.");
 							
 							if (in.available() == 0) {
-								System.out.println("isNeedToUpdateOptimisticNeighbor");
+								System.out.println("Broke out of message existence checking to send unchoke message.");
 								Message messageToSend = getNextMessageToSend();
-								if (messageToSend != null) {
-									RegularMessage messageCast = (RegularMessage) messageToSend;
-								}
 								p2pProtocol.sendMessage(out, messageToSend);
 							} else {
-								System.out.println("DANGER DANGER WILL ROBINSON");
+								System.out.println("Broke out of message existence checking to accept have message.");
 								p2pProtocol.receiveMessage(in);
 								Message messageToSend = getNextMessageToSend();
-								if (messageToSend != null) {
-									p2pProtocol.sendMessage(out, messageToSend);
-								}
+								if (messageToSend != null) p2pProtocol.sendMessage(out, messageToSend);
 							}
 
 						}
