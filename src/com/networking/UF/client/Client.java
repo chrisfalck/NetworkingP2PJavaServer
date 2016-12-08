@@ -237,8 +237,9 @@ public class Client implements Runnable {
 				p2pProtocol.reset();
 
 				if (waiting) {
-					
-					System.out.println("Client waiting for further implementation.");
+
+					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is interested in " + getServerPeerId() + ": " + connectionState.isInterested());
+					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is choked by " + getServerPeerId() + ": " + connectionState.isChoked());
 					p2pProtocol.receiveMessage(in);
 
 					Message messageToSend = getNextMessageToSend();
