@@ -124,6 +124,7 @@ public class Server implements Runnable {
 					} else {
 						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 					}
+					System.out.println("Server is setting need to update preferred neighbors on peer " + sortedPeers.get(i).peerAndSpeedId);
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 //					logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 				}
