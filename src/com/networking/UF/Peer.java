@@ -103,7 +103,7 @@ public class Peer {
     				System.out.println("Updating optimistically unchoked neighbor.");
 					myPeerServer.updateOptimisticallyUnchokedNeighbor();
 				}
-			}, 30 * 1000, timeBetweenOptimisticallyUnchoked * 1000);
+			}, 33 * 1000, timeBetweenOptimisticallyUnchoked * 1000);
     		
     		while (true) {}
 
