@@ -239,14 +239,13 @@ public class Client implements Runnable {
 				if (waiting) {
 					
 					System.out.println("Client waiting for further implementation.");
-					TimeUnit.MINUTES.sleep(5);
 					p2pProtocol.receiveMessage(in);
 
 					Message messageToSend = getNextMessageToSend();
 
 
 					p2pProtocol.sendMessage(out, messageToSend);
-
+					TimeUnit.MINUTES.sleep(10);
 				} else {
 
 					Message messageToSend = getNextMessageToSend();
@@ -255,7 +254,7 @@ public class Client implements Runnable {
 					if (messageToSend != null) {
 						p2pProtocol.sendMessage(out, messageToSend);
 						p2pProtocol.receiveMessage(in);
-					}
+					} 
 				}
 
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");

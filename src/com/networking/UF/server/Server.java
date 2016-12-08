@@ -85,7 +85,7 @@ public class Server implements Runnable {
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
 			ConnectionState currentConnectionState = thisPeersClientConnectionStates.get(currentPeerId);
-			if(currentConnectionState.isInterested() == true){
+			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 			}
 		}
@@ -125,7 +125,7 @@ public class Server implements Runnable {
 						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 					}
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
-					logger.logChangeOfPreferredNeighbors(preferredNeighbors);
+//					logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 				}
 			}
 		} catch (IOException e) {
@@ -181,10 +181,8 @@ public class Server implements Runnable {
 		
 		// The P2PProtocol created for use by this Handler thread. 
 		private P2PProtocol p2pProtocol;
-
-		// Determines whether the Handler should send messages first or receive them
-		private boolean waiting = true;
-
+		
+		private boolean haveSentBitfield = false;
 
 		public Handler(Socket connection, int no, Server server) {
 			this.connection = connection;
@@ -208,13 +206,13 @@ public class Server implements Runnable {
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
 			
-			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveSentBitfield) {
 				// Send Bitfield
 				System.out.println("Building bitfield message to send to client.");
 				BitSet bitfield = fileManager.getBitfield();
 				int messageLength = 1 + bitfield.toByteArray().length;
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-
+				haveSentBitfield = true;
 				return bitfieldMessage;
 			}
 
@@ -227,10 +225,11 @@ public class Server implements Runnable {
 					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
 					connectionState.setFileIndexToSend(-1);
 					// Now wait for a request
-					waiting = true;
+					connectionState.setWaiting(true);
 
 					return chokeMessage;
 				} else {
+					connectionState.setWaiting(false);
 					System.out.println("Building unchoke message to send to client.");
 					RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
 
@@ -244,13 +243,13 @@ public class Server implements Runnable {
 				connectionState.setNeedToUpdateOptimisticNeighbor(false);
 				RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
 				// Now wait for a request
-				waiting = true;
+				connectionState.setWaiting(true);
 
 				return unchokeMessage;
 			} 
 			
 			else if (connectionState.getFileIndexToSend() != -1){
-				waiting = false;
+				connectionState.setWaiting(true);
 				// Send Piece
 				if (connectionState.isChoked()) {
 					System.out.println("Building choke message to send to client.");
@@ -277,15 +276,17 @@ public class Server implements Runnable {
 				//initialize Input and Output streams
 				out = new ObjectOutputStream(connection.getOutputStream());
 				in = new ObjectInputStream(connection.getInputStream());
-				
+				ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
+
 				try{
 					
 					// Most of the business logic of the server will happen in this while loop.
 					while(true)
 					{
 						p2pProtocol.reset();
-
-						if (waiting) {
+						
+						if (connectionState.isWaiting()) {
+							
 							// Wait for the client messages to arrive.
 							p2pProtocol.receiveMessage(in);
 
@@ -295,12 +296,23 @@ public class Server implements Runnable {
 
 							p2pProtocol.sendMessage(out, messageToSend);
 						} else {
-							Message messageToSend = getNextMessageToSend();
+							
+							while (in.available() == 0) {
+								if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
+									break;
+								}
+							}
+							
+							if (in.available() == 0) {
+								Message messageToSend = getNextMessageToSend();
+								RegularMessage messageCase = (RegularMessage)messageToSend;
+								p2pProtocol.sendMessage(out, messageToSend);
+							} else {
+								p2pProtocol.receiveMessage(in);
+								Message messageToSend = getNextMessageToSend();
+								p2pProtocol.sendMessage(out, messageToSend);
+							}
 
-							p2pProtocol.sendMessage(out, messageToSend);
-
-
-							p2pProtocol.receiveMessage(in);
 						}
 						System.out.println("End-Server------------------------------------------------------------------------\n\n\n");
 					}
