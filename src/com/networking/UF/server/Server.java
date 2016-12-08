@@ -110,6 +110,11 @@ public class Server implements Runnable {
 			sortedPeers.add(unsortedPeers.get(fastestPeerIdIndex));
 			unsortedPeers.remove(fastestPeerIdIndex);
 		}
+		
+		for (PeerAndSpeed pAndS: sortedPeers) {
+			System.out.println(pAndS.peerAndSpeedId);
+			System.out.println(pAndS.peerAndSpeedSpeed);
+		}
 
 		try {
 			if (numPreferredNeighbors == 0) {
