@@ -88,12 +88,14 @@ public class Server implements Runnable {
 			ConnectionState currentConnectionState = thisPeersClientConnectionStates.get(currentPeerId);
 			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
+			} else {
+				System.out.println(currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}
 		}
 		System.out.println("Finished adding unsorted peers.");
 		for (PeerAndSpeed pAndS: unsortedPeers) {
-			System.out.println("Finished adding unsorted peers.");
-			System.out.println("Finished adding unsorted peers.");
+			System.out.println(pAndS.peerAndSpeedId);
+			System.out.println(pAndS.peerAndSpeedSpeed);
 		}
 
 
