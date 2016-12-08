@@ -124,8 +124,8 @@ public class Server implements Runnable {
 					} else {
 						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
 					}
+					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 				}
-				connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 			}
 			logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 		} catch (IOException e) {
