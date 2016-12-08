@@ -117,11 +117,13 @@ public class Server implements Runnable {
 			}
 			List<Integer> preferredNeighbors = new ArrayList<Integer>();
 			for (int i = 0; i < thisPeersClientConnectionStates.size(); ++i) {
-				if (i < numPreferredNeighbors && i < sortedPeers.size()) {
-					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
-					preferredNeighbors.add(sortedPeers.get(i).peerAndSpeedId);
-				} else {
-					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
+				if (i < sortedPeers.size()) {
+					if (i < numPreferredNeighbors) {
+						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
+						preferredNeighbors.add(sortedPeers.get(i).peerAndSpeedId);
+					} else {
+						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
+					}
 				}
 				connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 			}
