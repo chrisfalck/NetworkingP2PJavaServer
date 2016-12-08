@@ -27,7 +27,7 @@ public class InterestedMessageHandler implements MessageHandler {
 		myServer = server;
 		this.peerId = peerId;
 	}
-	
+	//
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
     	if (myClient != null) {
