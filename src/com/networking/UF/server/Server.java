@@ -293,7 +293,8 @@ public class Server implements Runnable {
 						ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
 						p2pProtocol.reset();
 						
-						System.out.println("Connected peer: " + p2pProtocol.getConnectedPeerId() + " is waiting: " + connectionState.isWaiting());
+						System.out.println("Connected peer: " + p2pProtocol.getConnectedPeerId());
+//								+ " is waiting: " + connectionState.isWaiting());
 						
 						if (connectionState == null || connectionState.isWaiting()) {
 							System.out.println("Inside the connection state null block.");
