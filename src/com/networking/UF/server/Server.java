@@ -245,6 +245,13 @@ public class Server implements Runnable {
 
 			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
 				// Send Choke / Unchoke
+				if (!connectionState.isChoked()) {
+					connectionState.setWaiting(true);
+					System.out.println("Building unchoke message to send to client.");
+					RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
+
+					return unchokeMessage;
+				}
 				connectionState.setNeedToUpdatePreferredNeighbors(false);
 				boolean choked = connectionState.isChoked();
 				if (choked) {
