@@ -222,7 +222,7 @@ public class Server implements Runnable {
 				boolean choked = connectionState.isChoked();
 				if (choked) {
 					System.out.println("Building choke message to send to client.");
-					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
 					connectionState.setFileIndexToSend(-1);
 					// Now wait for a request
 					connectionState.setWaiting(true);
@@ -231,7 +231,7 @@ public class Server implements Runnable {
 				} else {
 					connectionState.setWaiting(false);
 					System.out.println("Building unchoke message to send to client.");
-					RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
+					RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
 
 					return unchokeMessage;
 				}
@@ -241,7 +241,7 @@ public class Server implements Runnable {
 				// Send Choke / Unchoke
 				System.out.println("Building unchoke message to send to client.");
 				connectionState.setNeedToUpdateOptimisticNeighbor(false);
-				RegularMessage unchokeMessage = new RegularMessage(1, 1, null);
+				RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
 				// Now wait for a request
 				connectionState.setWaiting(true);
 
@@ -253,7 +253,7 @@ public class Server implements Runnable {
 				// Send Piece
 				if (connectionState.isChoked()) {
 					System.out.println("Building choke message to send to client.");
-					RegularMessage chokeMessage = new RegularMessage(1, 0, null);
+					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
 
 					return chokeMessage;
 				} else {
@@ -299,7 +299,7 @@ public class Server implements Runnable {
 
 							
 							while (in.available() == 0) {
-								if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
+								if (connectionState.isNeedToUpdateOptimisticNeighbor() || connectionState.isNeedToUpdatePreferredNeighbors()) {
 									break;
 								}
 							}
