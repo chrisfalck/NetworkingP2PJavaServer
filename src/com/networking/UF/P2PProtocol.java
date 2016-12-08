@@ -172,6 +172,8 @@ public class P2PProtocol implements Protocol {
 		int messageLength = Ints.fromByteArray(Arrays.copyOfRange(rawReceivedMessage, 0, 4));
 		byte[] messagePayload = Arrays.copyOfRange(rawReceivedMessage, regularHeader, rawReceivedMessage.length);
 		RegularMessage regularMessage = new RegularMessage(messageLength, regularHeader, messagePayload);
+		
+		System.out.println("Message type in p2p is: " + regularHeader);
 
 		// Otherwise see what kind of message it is. 
 		switch (regularHeader) {
@@ -242,6 +244,8 @@ public class P2PProtocol implements Protocol {
 			RequestMessageHandler requestMessageHandler;
 			
 			requestMessageHandler = new RequestMessageHandler(myServer, connectedPeerId);
+			
+			System.out.println("Made it to request handler");
 			
 			requestMessageHandler.receiveMessage(regularMessage);
 			break;

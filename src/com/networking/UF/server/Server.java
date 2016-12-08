@@ -322,7 +322,7 @@ public class Server implements Runnable {
 								System.out.println("isNeedToUpdateOptimisticNeighbor");
 								Message messageToSend = getNextMessageToSend();
 								if (messageToSend != null) {
-									RegularMessage messageCase = (RegularMessage) messageToSend;
+									RegularMessage messageCast = (RegularMessage) messageToSend;
 								}
 								p2pProtocol.sendMessage(out, messageToSend);
 							} else {
