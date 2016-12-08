@@ -37,6 +37,7 @@ public class Client implements Runnable {
 	Peer myPeer;
 	private boolean shouldSendHaveMessage = false;
 	private byte[] currentHaveMessageIndexToSend;
+	boolean bitfieldReceived = false;
 	
 	public byte[] getCurrentHaveMessageIndexToSend() {
 		return currentHaveMessageIndexToSend;
@@ -158,12 +159,12 @@ public class Client implements Runnable {
 
 		} 
 		
-		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
+		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !bitfieldReceived) {
 			// Send interested / not interested
 			// Wait for unchoked message
 			connectionState.setWaiting(true);
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-
+			bitfieldReceived = true;
 			if (indexOfMissingPiece != -1) {
 				// We want a piece from the Server.
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
@@ -172,7 +173,6 @@ public class Client implements Runnable {
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
-
 		} 
 		
 		else if (connectionState.getHasReceivedPiece() == true) {
