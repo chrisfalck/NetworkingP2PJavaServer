@@ -306,7 +306,9 @@ public class Server implements Runnable {
 
 							System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
 
-							p2pProtocol.sendMessage(out, messageToSend);
+							if (messageToSend != null) {
+								p2pProtocol.sendMessage(out, messageToSend);
+							}
 						} else {
 
 							
