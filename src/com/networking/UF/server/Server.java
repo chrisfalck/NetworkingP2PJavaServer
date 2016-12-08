@@ -133,8 +133,10 @@ public class Server implements Runnable {
 					}
 					System.out.println("Server is setting need to update preferred neighbors on peer " + sortedPeers.get(i).peerAndSpeedId);
 					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
-//					logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 				}
+			}
+			if (preferredNeighbors.size() > 0) {
+				logger.logChangeOfPreferredNeighbors(preferredNeighbors);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
