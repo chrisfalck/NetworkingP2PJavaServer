@@ -37,7 +37,6 @@ public class Client implements Runnable {
 	Peer myPeer;
 	private boolean shouldSendHaveMessage = false;
 	private byte[] currentHaveMessageIndexToSend;
-	private boolean waiting = false;
 	
 	public byte[] getCurrentHaveMessageIndexToSend() {
 		return currentHaveMessageIndexToSend;
@@ -141,7 +140,7 @@ public class Client implements Runnable {
 	 * @throws InterruptedException
 	 */
 	private Message getNextMessageToSend() throws InterruptedException {
-		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + waiting);
+		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + connectionState.isWaiting());
 		if (!connectionState.haveReceivedHandshake()) {
 			// Send Handshake
 			System.out.println("Building handshake message to send to server.");
@@ -162,7 +161,7 @@ public class Client implements Runnable {
 		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield()) {
 			// Send interested / not interested
 			// Wait for unchoked message
-			waiting = true;
+			connectionState.setWaiting(true);
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
 
 			if (indexOfMissingPiece != -1) {
@@ -193,7 +192,7 @@ public class Client implements Runnable {
 		
 		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true) {
 			// Send request messages until choked
-			waiting = false;
+			connectionState.setWaiting(false);
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
 			System.out.println("index of missing piece is: " + indexOfMissingPiece);
 			if (indexOfMissingPiece == -1) {
@@ -209,7 +208,7 @@ public class Client implements Runnable {
 		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
 			// Wait until unchoked to send more request messages
 			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
-			waiting = true;
+			connectionState.setWaiting(true);
 		}
 		return null;
 	}
@@ -236,7 +235,7 @@ public class Client implements Runnable {
 				System.out.println("\n\n\nStart-Client----------------------------------------------------------------------");
 				p2pProtocol.reset();
 
-				if (waiting) {
+				if (this.connectionState != null && this.connectionState.isWaiting()) {
 
 					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is interested in " + getServerPeerId() + ": " + connectionState.isInterested());
 					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is choked by " + getServerPeerId() + ": " + connectionState.isChoked());
