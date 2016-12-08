@@ -21,7 +21,7 @@ public class peerProcess {
 //        	Scanner scanner = new Scanner(System.in);
 //        	peerId = scanner.nextInt();
 //        	scanner.close();
-        	peerId = 1002;
+        	peerId = 1003;
         } else {
         	peerId = Integer.parseInt(args[0]);
         }

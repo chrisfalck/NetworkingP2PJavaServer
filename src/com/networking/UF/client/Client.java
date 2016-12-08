@@ -238,7 +238,7 @@ public class Client implements Runnable {
 
 				if (waiting) {
 					
-					System.out.println("Waiting for further implementation.");
+					System.out.println("Client waiting for further implementation.");
 					TimeUnit.MINUTES.sleep(5);
 					p2pProtocol.receiveMessage(in);
 

@@ -40,7 +40,7 @@ public class InterestedMessageHandler implements MessageHandler {
     		connectionState.setInterested(true);
     		myServer.setConnectionState(peerId, connectionState);
 			logger.logReceiptOfInterestedMessage(peerId);
-    		System.out.println("Waiting for further implementation.");
+    		System.out.println("Server waiting for further implementation.");
     		try {
 				TimeUnit.MINUTES.sleep(5);
 			} catch (InterruptedException e) {
