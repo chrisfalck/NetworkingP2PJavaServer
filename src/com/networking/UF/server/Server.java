@@ -276,16 +276,16 @@ public class Server implements Runnable {
 				//initialize Input and Output streams
 				out = new ObjectOutputStream(connection.getOutputStream());
 				in = new ObjectInputStream(connection.getInputStream());
-				ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
-
+				
 				try{
 					
 					// Most of the business logic of the server will happen in this while loop.
 					while(true)
 					{
+						ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
 						p2pProtocol.reset();
 						
-						if (connectionState.isWaiting()) {
+						if (connectionState == null || connectionState.isWaiting()) {
 							
 							// Wait for the client messages to arrive.
 							p2pProtocol.receiveMessage(in);
@@ -296,6 +296,7 @@ public class Server implements Runnable {
 
 							p2pProtocol.sendMessage(out, messageToSend);
 						} else {
+
 							
 							while (in.available() == 0) {
 								if (connectionState.isNeedToUpdateOptimisticNeighbor()) {

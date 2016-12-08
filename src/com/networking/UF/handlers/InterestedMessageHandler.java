@@ -41,7 +41,6 @@ public class InterestedMessageHandler implements MessageHandler {
     		connectionState.setWaiting(false);
     		myServer.setConnectionState(peerId, connectionState);
 			logger.logReceiptOfInterestedMessage(peerId);
-    		System.out.println("Server waiting for further implementation.");
     	}
         return false;
     }
