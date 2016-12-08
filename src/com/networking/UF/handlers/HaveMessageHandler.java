@@ -1,6 +1,7 @@
 package com.networking.UF.handlers;
 
 import com.google.common.primitives.Ints;
+import com.networking.UF.BitfieldUtils;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
 import com.networking.UF.client.Client;
@@ -30,17 +31,19 @@ public class HaveMessageHandler implements MessageHandler {
     	RegularMessage messageCast = (RegularMessage)message;
     	
     	if (myServer != null){
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
-	    	connectionState.setHasReceivedHaveMessage(true);
-	    	connectionState.setBitfield(fileManager.getUpdatedBitfield());
 	    	byte[] index = messageCast.getMessagePayload();
+
+	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
+	    	ConnectionState updatedConnectionState = BitfieldUtils.updateServerOwnedClientConnectionState(index, connectionState);
+
 	    	if(fileManager.getFilePieceAtIndex(Ints.fromByteArray(index)).length == 0){
-	    		connectionState.setInterested(true);
+	    		updatedConnectionState.setInterested(true);
 	    	}
 	    	else{
-	    		connectionState.setInterested(true);
+	    		updatedConnectionState.setInterested(false);
 	    	}
-	    	myServer.setConnectionState(peerId, connectionState);
+
+	    	myServer.setConnectionState(peerId, updatedConnectionState);
 			logger.logReceiptOfHaveMessage(peerId, Ints.fromByteArray(index));
     	}
     	 return false;

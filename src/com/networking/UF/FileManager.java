@@ -216,6 +216,7 @@ public class FileManager {
 	
 	public void addFilePiece(int index, byte[] content){
 		filePieces[index] = content;
+		bitfield.set(index);
 	}
 
 	public byte[] getFilePieceAtIndex(int index) {
@@ -236,17 +237,6 @@ public class FileManager {
 
 	public String getCurrentDirectoryPath() {
 		return currentDirectoryPath;
-	}
-	
-	public BitSet getUpdatedBitfield(){
-		BitSet updatedBitfield = new BitSet(filePieces.length);
-		updatedBitfield.clear();
-		for(int i = 0; i < filePieces.length; ++i){
-			if(filePieces[i].length != 0){
-				updatedBitfield.flip(i);
-			}
-		}
-		return updatedBitfield;
 	}
 
 }

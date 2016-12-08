@@ -35,13 +35,10 @@ public class PieceMessageHandler implements MessageHandler {
     	byte[] filePieceIndex = messageCast.getPieceIndex(filePiece);
     	byte[] filePieceContent = messageCast.getPieceContent(filePiece);
     	
-    	if(myClient != null){
+    	if(myClient != null) {
     		myClient.setHasReceivedPiece(true);
     		myClient.setCurrentHaveMessageIndexToSend(filePieceIndex);
     		fileManager.addFilePiece(Ints.fromByteArray(filePieceIndex), filePieceContent);
-    		ConnectionState connectionState = myClient.getConnectionState();
-    		connectionState.setBitfield(fileManager.getUpdatedBitfield());
-    		myClient.setConnectionState(connectionState);
     	}
   
         return false;

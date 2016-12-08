@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Random;
 
+import com.google.common.primitives.Ints;
+import com.networking.UF.server.ConnectionState;
+
 //TODO: Requested list. 
 public class BitfieldUtils {
 	
@@ -23,6 +26,11 @@ public class BitfieldUtils {
 		Random generator = new Random(); 
 		return missingPieceIndices.get(generator.nextInt(missingPieceIndices.size()));
 		
+	}
+	
+	public static ConnectionState updateServerOwnedClientConnectionState(byte[] newPieceIndex, ConnectionState clientConnectionState) {
+		clientConnectionState.getBitfield().set(Ints.fromByteArray(newPieceIndex));
+		return clientConnectionState;
 	}
 	
 }
