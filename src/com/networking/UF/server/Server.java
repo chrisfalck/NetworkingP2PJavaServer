@@ -274,8 +274,7 @@ public class Server implements Runnable {
 			} 
 
 			else{
-				System.out.println("Waiting for further implementation.");
-				while(true){}
+				return null;
 			}
 		}
 
