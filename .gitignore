@@ -6,3 +6,6 @@ NetworkingP2PJavaServer/.classpath
 .idea/
 *.iml
 peer_*/
+*.cfg
+PeerInfo.cfg
+peer_1002.log
