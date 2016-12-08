@@ -79,20 +79,21 @@ public class Server implements Runnable {
 	 */
 	public void updatePreferredNeighbors() {
 		System.out.println("Entered updatePreferredNeighbors() block");
-		ConcurrentHashMap<Integer,ConnectionState> thisPeersClientConnectionStates = myPeer.getThisPeersClientConnectionStates();
-		Enumeration<Integer> peerIds = thisPeersClientConnectionStates.keys();
+		ConcurrentHashMap<Integer,ConnectionState> myServerConnectionStates = connectionStates;
+		Enumeration<Integer> peerIds = myServerConnectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
 		ArrayList<PeerAndSpeed> sortedPeers = new ArrayList<PeerAndSpeed>();
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
-			ConnectionState currentConnectionState = thisPeersClientConnectionStates.get(currentPeerId);
+			ConnectionState currentConnectionState = myServerConnectionStates.get(currentPeerId);
+			System.out.println(currentConnectionState.toString());
 			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 			} else {
-				System.out.println(currentPeerId + " " + currentConnectionState.getConnectionSpeed());
+				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}
 		}
-		System.out.println("Finished adding unsorted peers.");
+		System.out.println("Finished adding unsorted peers, current list:");
 		for (PeerAndSpeed pAndS: unsortedPeers) {
 			System.out.println(pAndS.peerAndSpeedId);
 			System.out.println(pAndS.peerAndSpeedSpeed);
@@ -129,7 +130,7 @@ public class Server implements Runnable {
 				numPreferredNeighbors = ConfigParser.parseCommonFile().getNumberOfPreferredNeighbors();
 			}
 			List<Integer> preferredNeighbors = new ArrayList<Integer>();
-			for (int i = 0; i < thisPeersClientConnectionStates.size(); ++i) {
+			for (int i = 0; i < myServerConnectionStates.size(); ++i) {
 				if (i < sortedPeers.size()) {
 					if (i < numPreferredNeighbors) {
 						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
