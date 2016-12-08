@@ -78,7 +78,7 @@ public class Server implements Runnable {
 	 * by this peer (the downloading rate of another peer depends on this peer's client's download rate from that peer)
 	 */
 	public void updatePreferredNeighbors() {
-		System.out.println("Entered updatePreferredNeighbors() block");
+//		System.out.println("Entered updatePreferredNeighbors() block");
 		ConcurrentHashMap<Integer,ConnectionState> myServerConnectionStates = connectionStates;
 		Enumeration<Integer> peerIds = myServerConnectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
@@ -89,7 +89,7 @@ public class Server implements Runnable {
 			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 			} else {
-				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
+//				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}
 		}
 
@@ -113,10 +113,10 @@ public class Server implements Runnable {
 			unsortedPeers.remove(fastestPeerIdIndex);
 		}
 		
-		for (PeerAndSpeed pAndS: sortedPeers) {
-			System.out.println(pAndS.peerAndSpeedId);
-			System.out.println(pAndS.peerAndSpeedSpeed);
-		}
+//		for (PeerAndSpeed pAndS: sortedPeers) {
+//			System.out.println(pAndS.peerAndSpeedId);
+//			System.out.println(pAndS.peerAndSpeedSpeed);
+//		}
 
 		try {
 			if (numPreferredNeighbors == 0) {
@@ -224,6 +224,23 @@ public class Server implements Runnable {
 				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
 				haveSentBitfield = true;
 				return bitfieldMessage;
+
+			} else if (connectionState.getFileIndexToSend() != -1) {
+				connectionState.setWaiting(true);
+				// Send Piece
+				if (connectionState.isChoked()) {
+					System.out.println("Building choke message to send to client.");
+					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
+
+					return chokeMessage;
+				} else {
+					int fileIndex = connectionState.getFileIndexToSend();
+					connectionState.setFileIndexToSend(-1);
+					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
+					System.out.println("Building a piece message to send to client");
+					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));
+				}
+
 			}
 
 			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
@@ -256,25 +273,7 @@ public class Server implements Runnable {
 				connectionState.setWaiting(true);
 
 				return unchokeMessage;
-			} 
-			
-			else if (connectionState.getFileIndexToSend() != -1){
-				connectionState.setWaiting(true);
-				// Send Piece
-				if (connectionState.isChoked()) {
-					System.out.println("Building choke message to send to client.");
-					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
-
-					return chokeMessage;
-				} else {
-					connectionState.setFileIndexToSend(-1);
-					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend())).length;
-					System.out.println("Building a piece message to send to client");
-					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(connectionState.getFileIndexToSend()));
-				}
-
-			} 
-
+			}
 			else{
 				return null;
 			}
@@ -322,13 +321,17 @@ public class Server implements Runnable {
 							if (in.available() == 0) {
 								System.out.println("isNeedToUpdateOptimisticNeighbor");
 								Message messageToSend = getNextMessageToSend();
-								RegularMessage messageCase = (RegularMessage)messageToSend;
+								if (messageToSend != null) {
+									RegularMessage messageCase = (RegularMessage) messageToSend;
+								}
 								p2pProtocol.sendMessage(out, messageToSend);
 							} else {
 								System.out.println("DANGER DANGER WILL ROBINSON");
 								p2pProtocol.receiveMessage(in);
 								Message messageToSend = getNextMessageToSend();
-								p2pProtocol.sendMessage(out, messageToSend);
+								if (messageToSend != null) {
+									p2pProtocol.sendMessage(out, messageToSend);
+								}
 							}
 
 						}
