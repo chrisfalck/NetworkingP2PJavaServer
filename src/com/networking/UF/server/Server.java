@@ -78,6 +78,7 @@ public class Server implements Runnable {
 	 * by this peer (the downloading rate of another peer depends on this peer's client's download rate from that peer)
 	 */
 	public void updatePreferredNeighbors() {
+		System.out.println("Entered updatePreferredNeighbors() block");
 		ConcurrentHashMap<Integer,ConnectionState> thisPeersClientConnectionStates = myPeer.getThisPeersClientConnectionStates();
 		Enumeration<Integer> peerIds = thisPeersClientConnectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
@@ -88,6 +89,11 @@ public class Server implements Runnable {
 			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 			}
+		}
+		System.out.println("Finished adding unsorted peers.");
+		for (PeerAndSpeed pAndS: unsortedPeers) {
+			System.out.println("Finished adding unsorted peers.");
+			System.out.println("Finished adding unsorted peers.");
 		}
 
 
