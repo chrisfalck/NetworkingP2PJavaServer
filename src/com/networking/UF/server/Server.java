@@ -86,19 +86,12 @@ public class Server implements Runnable {
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
 			ConnectionState currentConnectionState = myServerConnectionStates.get(currentPeerId);
-			System.out.println(currentConnectionState.toString());
 			if (currentConnectionState.isInterested() == true){
 				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
 			} else {
 				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}
 		}
-		System.out.println("Finished adding unsorted peers, current list:");
-		for (PeerAndSpeed pAndS: unsortedPeers) {
-			System.out.println(pAndS.peerAndSpeedId);
-			System.out.println(pAndS.peerAndSpeedSpeed);
-		}
-
 
 		// At the end of this loop, sortedPeers will contain fastest to slowest peers from lowest to highest index.
 		Random generator = new Random();
@@ -313,17 +306,21 @@ public class Server implements Runnable {
 						} else {
 
 							
+							System.out.println("Beginning the in.available() wait loop.");
 							while (in.available() == 0) {
 								if (connectionState.isNeedToUpdateOptimisticNeighbor() || connectionState.isNeedToUpdatePreferredNeighbors()) {
 									break;
 								}
 							}
+							System.out.println("Exiting the in.available() wait loop.");
 							
 							if (in.available() == 0) {
+								System.out.println("isNeedToUpdateOptimisticNeighbor");
 								Message messageToSend = getNextMessageToSend();
 								RegularMessage messageCase = (RegularMessage)messageToSend;
 								p2pProtocol.sendMessage(out, messageToSend);
 							} else {
+								System.out.println("DANGER DANGER WILL ROBINSON");
 								p2pProtocol.receiveMessage(in);
 								Message messageToSend = getNextMessageToSend();
 								p2pProtocol.sendMessage(out, messageToSend);
