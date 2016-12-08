@@ -82,9 +82,12 @@ public class Logger {
 		}
 
 		// Remove the last comma and space.
-		preferredNeighborsString = preferredNeighborsString.substring(0, preferredNeighborsString.length() - 2);
-
-		return preferredNeighborsString;
+		if (preferredNeighborsString.length() > 1) {
+			preferredNeighborsString = preferredNeighborsString.substring(0, preferredNeighborsString.length() - 2);
+			return preferredNeighborsString;
+		} else {
+			return "OHMYGODTHERESANERROR";
+		}
 	}
 
 	/**
