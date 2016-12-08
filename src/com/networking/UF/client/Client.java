@@ -195,7 +195,7 @@ public class Client implements Runnable {
 			// Send request messages until choked
 			waiting = false;
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-
+			System.out.println("index of missing piece is: " + indexOfMissingPiece);
 			if (indexOfMissingPiece == -1) {
 				connectionState.setInterested(false);
 				System.out.println("Not interested in any file pieces from " + this.serverAddress);
