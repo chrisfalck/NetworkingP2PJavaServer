@@ -36,25 +36,6 @@ public class RegularMessage implements Message {
         return Bytes.concat(messageLengthBytes, lastByteOfConvertedMessageType, messagePayload);
     }
 	
-	
-	
-	
-	public byte[] getPieceIndex(BitSet messagePayload){
-		byte[] pieceIndex = null;
-		pieceIndex = Arrays.copyOfRange(messagePayload.toByteArray(),0,3);
-		return pieceIndex;
-	}
-	
-	public byte[] getPieceContent(BitSet messagePayload){
-		byte[] pieceContent = Arrays.copyOfRange(messagePayload.toByteArray(),4,messagePayload.toByteArray().length - 1);
-		return pieceContent;	
-	}
-	
-	
-	
-	
-	
-    
     public String getMessageType() {
 		switch (this.messageType) {
 		case 0:

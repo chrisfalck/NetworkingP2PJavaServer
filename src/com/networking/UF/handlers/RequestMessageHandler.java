@@ -3,6 +3,7 @@ package com.networking.UF.handlers;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
+import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.networking.UF.FileManager;
 import com.networking.UF.client.Client;
@@ -30,7 +31,6 @@ public class RequestMessageHandler implements MessageHandler {
     	
     	if(myServer != null){
 
-	    	
 	    	int filePieceIndex = Ints.fromByteArray(messageCast.getMessagePayload());
 	    	
 	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
