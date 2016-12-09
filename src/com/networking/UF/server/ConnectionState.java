@@ -7,9 +7,8 @@ import javax.swing.text.DefaultEditorKit.CutAction;
 public class ConnectionState {
 	
 	private int peerId;
-
-	private boolean haveReceivedHandshake = false;
-	private boolean haveReceivedBitfield = false;
+	private boolean haveSentHandshake = false;
+	private boolean haveSentBitfield = false;
 	private boolean choked = true;
 	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
@@ -24,9 +23,7 @@ public class ConnectionState {
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
-						  "haveReceivedHandshake: " + haveReceivedHandshake + "\n" +
 						  "hasReceivedPiece: " + hasReceivedPiece + "\n" + 
-						  "haveReceivedBitfield " + haveReceivedBitfield + "\n" +
 						  "choked: " + choked + "\n" +
 						  "optimisticallyUnchoked: " + optimisticallyUnchoked + "\n" + 
 						  "connectionSpeed: " + connectionSpeed + "\n" + 
@@ -37,106 +34,99 @@ public class ConnectionState {
 						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
 	}
 	
-	public int getPeerId() {
-		return peerId;
-	}
-
-	public void setPeerId(int peerId) {
-		this.peerId = peerId;
-	}
-	
-	public boolean isOptimisticallyUnchoked() {
-		return optimisticallyUnchoked;
-	}
-
-	public void setOptimisticallyUnchoked(boolean optimisticallyUnchoked) {
-		this.optimisticallyUnchoked = optimisticallyUnchoked;
-	}
-
-	public long getConnectionSpeed() {
-		return connectionSpeed;
-	}
-
-	public void setConnectionSpeed(long connectionSpeed) {
-		this.connectionSpeed = connectionSpeed;
-	}
-
 	public ConnectionState(int peerId) {
 		this.peerId = peerId;
 	}
 	
-	public boolean haveReceivedBitfield() {
-		return haveReceivedBitfield;
+	public boolean haveSentHandshakeToClient() {
+		return haveSentHandshake;
 	}
-	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
-		this.haveReceivedBitfield = haveReceivedBitfield;
+
+	public void setHaveSentHandshakeToClient(boolean haveSentHandshake) {
+		this.haveSentHandshake = haveSentHandshake;
 	}
-	public boolean haveReceivedHandshake() {
-		return haveReceivedHandshake;
+	
+	public boolean haveSentBitfieldToClient() {
+		return haveSentBitfield;
 	}
-	public void setHaveReceivedHandshake(boolean haveReceivedHandshake) {
-		this.haveReceivedHandshake = haveReceivedHandshake;
+
+	public void setHaveSentBitfieldToClient(boolean haveSendBitfield) {
+		this.haveSentBitfield = haveSendBitfield;
 	}
-	public boolean isChoked() {
+
+	public int getPeerIdOfConnectedClient() {
+		return peerId;
+	}
+	public void setPeerIdOfConnectedClient(int peerId) {
+		this.peerId = peerId;
+	}
+	
+	public boolean clientIsOptimisticallyUnchoked() {
+		return optimisticallyUnchoked;
+	}
+	public void setClientIsOptimisticallyUnchoked(boolean optimisticallyUnchoked) {
+		this.optimisticallyUnchoked = optimisticallyUnchoked;
+	}
+
+	public long getClientConnectionSpeed() {
+		return connectionSpeed;
+	}
+	public void setClientConnectionSpeed(long connectionSpeed) {
+		this.connectionSpeed = connectionSpeed;
+	}
+	
+	public boolean clientIsChoked() {
 		return choked;
 	}
-	public void setChoked(boolean choked) {
+	public void setClientIsChoked(boolean choked) {
 		this.choked = choked;
 	}
 
-	public boolean isInterested() {
+	public boolean clientIsInterested() {
 		return interested;
 	}
-	public void setInterested(boolean interested) {
+	public void setClientIsInterested(boolean interested) {
 		this.interested = interested;
 	}
-	public BitSet getBitfield() {
+
+	public BitSet getClientBitfield() {
 		return bitfield;
 	}
-	public void setBitfield(BitSet bitfield) {
+	public void setClientBitfield(BitSet bitfield) {
 		this.bitfield = bitfield;
 	}
-	public boolean getHasReceivedPiece() {
-		return hasReceivedPiece;
-	}
-	public void setHasReceivedPiece(boolean hasReceivedPiece) {
-		this.hasReceivedPiece = hasReceivedPiece;
-	}
-	public int getFileIndexToSend() {
+
+	public int getFileIndexToSendToClient() {
 		return fileIndexToSend;
 	}
-
-	public void setFileIndexToSend(int fileIndexToSend) {
+	public void setFileIndexToSendToClient(int fileIndexToSend) {
 		this.fileIndexToSend = fileIndexToSend;
 	}
 	
-	public boolean getHasReceivedHaveMessage(){
+	public boolean getHaveReceivedHaveMsgFromClient(){
 		return hasReceivedHave;
 	}
-	
-	public void setHasReceivedHaveMessage(boolean b) {
+	public void setHaveReceivedHaveMsgFromClient(boolean b) {
 		this.hasReceivedHave = b;	
 	}
-	public boolean isWaiting() {
+
+	public boolean serverShouldWaitForMsgFromClient() {
 		return waiting;
 	}
-
-	public void setWaiting(boolean waiting) {
+	public void setServerShouldWaitForMsgFromClient(boolean waiting) {
 		this.waiting = waiting;
 	}
 	
-	public boolean isNeedToUpdatePreferredNeighbors() {
+	public boolean needToUpdatePreferredNeighbors() {
 		return needToUpdatePreferredNeighbors;
 	}
-
 	public void setNeedToUpdatePreferredNeighbors(boolean needToUpdatePreferredNeighbors) {
 		this.needToUpdatePreferredNeighbors = needToUpdatePreferredNeighbors;
 	}
 
-	public boolean isNeedToUpdateOptimisticNeighbor() {
+	public boolean needToUpdateOptimisticNeighbor() {
 		return needToUpdateOptimisticNeighbor;
 	}
-
 	public void setNeedToUpdateOptimisticNeighbor(boolean needToUpdateOptimisticNeighbor) {
 		this.needToUpdateOptimisticNeighbor = needToUpdateOptimisticNeighbor;
 	}

@@ -34,10 +34,10 @@ public class RequestMessageHandler implements MessageHandler {
 	    	byte[] filePieceIndex = (messageCast.getPieceIndex(filePiece));
 	    	int result = Ints.fromByteArray(filePieceIndex);
 	    	
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
+	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
 			System.out.println("Server is handling request message: Index received " + result);
-	    	connectionState.setFileIndexToSend(result);
-	    	myServer.setConnectionState(peerId, connectionState);
+	    	connectionState.setFileIndexToSendToClient(result);
+	    	myServer.setClientConnectionState(peerId, connectionState);
 
     	}
 

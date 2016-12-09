@@ -29,7 +29,7 @@ public class BitfieldUtils {
 	}
 	
 	public static ConnectionState updateServerOwnedClientConnectionState(byte[] newPieceIndex, ConnectionState clientConnectionState) {
-		clientConnectionState.getBitfield().set(Ints.fromByteArray(newPieceIndex));
+		clientConnectionState.getClientBitfield().set(Ints.fromByteArray(newPieceIndex));
 		return clientConnectionState;
 	}
 	

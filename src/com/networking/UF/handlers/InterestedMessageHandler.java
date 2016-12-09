@@ -36,10 +36,10 @@ public class InterestedMessageHandler implements MessageHandler {
     	} else {
 
     		System.out.println("Server " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message from " + peerId);
-    		ConnectionState connectionState = myServer.getConnectionState(peerId);
-    		connectionState.setInterested(true);
-    		connectionState.setWaiting(false);
-    		myServer.setConnectionState(peerId, connectionState);
+    		ConnectionState connectionState = myServer.getClientConnectionState(peerId);
+    		connectionState.setClientIsInterested(true);
+    		connectionState.setServerShouldWaitForMsgFromClient(false);
+    		myServer.setClientConnectionState(peerId, connectionState);
 			logger.logReceiptOfInterestedMessage(peerId);
     	}
         return false;

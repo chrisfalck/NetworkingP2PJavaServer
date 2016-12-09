@@ -33,9 +33,9 @@ public class UnchokeMessageHandler implements MessageHandler {
 			logger.logUnchokingEvent(myClient.getServerPeerId());
     	}
     	else{
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
-	    	connectionState.setChoked(false);
-	    	myServer.setConnectionState(peerId, connectionState);
+	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
+	    	connectionState.setClientIsChoked(false);
+	    	myServer.setClientConnectionState(peerId, connectionState);
     	}
         return false;
     }

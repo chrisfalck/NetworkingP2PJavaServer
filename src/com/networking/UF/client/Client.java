@@ -22,7 +22,6 @@ import com.networking.UF.Peer;
 import com.networking.UF.messages.HandshakeMessage;
 import com.networking.UF.messages.Message;
 import com.networking.UF.messages.RegularMessage;
-import com.networking.UF.server.ConnectionState;
 
 public class Client implements Runnable {
 	Socket requestSocket;           //socket connect to the server
@@ -30,86 +29,92 @@ public class Client implements Runnable {
 	ObjectInputStream in;          //stream read from the socket
 	static FileManager fileManager = FileManager.getInstance();
 	static Logger logger = Logger.getInstance();
-	private P2PProtocol p2pProtocol = new P2PProtocol(fileManager.getThisPeerIdentifier(), "client", this);
 	private String serverAddress;
 	private int portNumber;
-	private int serverPeerId;
 	Peer myPeer;
-	private boolean shouldSendHaveMessage = false;
-	private byte[] currentHaveMessageIndexToSend;
-	boolean bitfieldReceived = false;
 	
+	// Return the peer id of the server we're connected to. 
+	private int serverPeerId;
+	
+	// Initialize a p2p protocol object with a reference to this client object and our peer id. 
+	private P2PProtocol p2pProtocol = new P2PProtocol(fileManager.getThisPeerIdentifier(), "client", this);
+
+	// Whether or not we established a connection with the Server. 
+	private boolean haveReceivedHandshake = false;
+	
+	// Whether or note we've received a bit field message. 
+	private boolean haveReceivedBitfield = false;
+
+	// The Have message index to send in a Have message to the server (set after receiving a file piece). 
+	private byte[] currentHaveMessageIndexToSend = new byte[0];
+
+	// Whether or not we need to send a Have message (set after receiving a file piece). 
+	private boolean shouldSendHaveMessage = false;
+
+	// Whether or not we are interested in the server.
+	private boolean interested = false;
+
+	// True if we've received a piece message and haven't yet dealt with it.
+	private boolean haveReceivedPiece = false;
+
+	// Whether the server has choked us or not.
+	private boolean isChoked = false;
+
+	// The download speed of pieces from this server.
+	private long downloadSpeed = 0;
+	
+	// Whether or not we should be waiting for a message from the server.
+	private boolean shouldWaitForMessage = false;
+	
+	private BitSet bitfieldOfServer = new BitSet();
+
+	public BitSet getBitfieldOfServer() {
+		return bitfieldOfServer;
+	}
+	public void setBitfieldOfServer(BitSet bitfieldOfServer) {
+		this.bitfieldOfServer = bitfieldOfServer;
+	}
+	public boolean shouldWaitForMessage() {
+		return shouldWaitForMessage;
+	}
+	public void setShouldWaitForMessage(boolean shouldWaitForMessage) {
+		this.shouldWaitForMessage = shouldWaitForMessage;
+	}
 	public byte[] getCurrentHaveMessageIndexToSend() {
 		return currentHaveMessageIndexToSend;
 	}
-
 	public void setCurrentHaveMessageIndexToSend(byte[] currentHaveMessageIndexToSend) {
 		this.currentHaveMessageIndexToSend = currentHaveMessageIndexToSend;
 	}
-
 	public boolean isShouldSendHaveMessage() {
 		return shouldSendHaveMessage;
 	}
-
 	public void setShouldSendHaveMessage(boolean shouldSendHaveMessage) {
 		this.shouldSendHaveMessage = shouldSendHaveMessage;
 	}
-
-	// Track this client's state.
-	private ConnectionState connectionState;
-
-	/**
-	 * Return this client's server
-	 * @return the peerID of the server this client is connected to
-	 */
 	public int getServerPeerId() {
 		return this.serverPeerId;
 	}
-
-	/**
-	 * Return this client's ConnectionState
-	 * @return the ConnectionState of this client
-	 */
-	public ConnectionState getConnectionState() {
-		return this.connectionState;
-	}
-
-	public void setConnectionState(ConnectionState connectionState) {
-		this.connectionState = connectionState;
-	}
-	
 	public boolean haveReceivedHandshake() {
-		return this.connectionState.haveReceivedHandshake();
+		return this.haveReceivedHandshake;
 	}
-	
-	public void setInterested(boolean interested) {
-		this.connectionState.setInterested(interested);;
-	}
-	
-	// Other fields on the client ConnectionState object are for the client itself.
-	// The bitfield on the client ConnectionState object referrs to the Server. 
-	public void setServerBitfield(BitSet serverBitset) {
-		connectionState.setBitfield(serverBitset);
-	}
-	
-	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
-		this.connectionState.setHaveReceivedBitfield(haveReceivedBitfield);
-	}
-
 	public void setHaveReceivedHandshake(boolean haveReceivedHandshake) {
-		this.connectionState.setHaveReceivedHandshake(haveReceivedHandshake);
+		this.haveReceivedHandshake = haveReceivedHandshake;
 	}
-	
+	public void setInterested(boolean interested) {
+		this.interested = interested;
+	}
+	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
+		this.haveReceivedBitfield = haveReceivedBitfield;
+	}
 	public void setHasReceivedPiece(boolean haveReceivedPiece){
-		this.connectionState.setHasReceivedPiece(haveReceivedPiece);
+		this.haveReceivedPiece = haveReceivedPiece;
 	}
-	
 	public void setChoked(boolean isChoked){
-		this.connectionState.setChoked(isChoked);
+		this.isChoked = isChoked;
 	}
-
 	public void setDownloadSpeed(long downloadSpeed) {
-		this.connectionState.setConnectionSpeed(downloadSpeed);
+		this.downloadSpeed = downloadSpeed;
 	}
 
 	/**
@@ -130,7 +135,6 @@ public class Client implements Runnable {
 		this.serverAddress = serverAddress;
 		this.portNumber = portNumber;
 		this.serverPeerId = serverPeerId;
-		this.connectionState = new ConnectionState(fileManager.getThisPeerIdentifier());
 		this.myPeer = myPeer;
 	}
 	
@@ -141,83 +145,119 @@ public class Client implements Runnable {
 	 * @throws InterruptedException
 	 */
 	private Message getNextMessageToSend() throws InterruptedException {
-		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + connectionState.isWaiting());
-		if (!connectionState.haveReceivedHandshake()) {
+		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + shouldWaitForMessage());
+		if (!haveReceivedHandshake()) {
 			// Send Handshake
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 
 		} 
-		
-		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
-			// Send Bitfield
-			System.out.println("Building bitfield message to send to server.");
-			BitSet bitfield = fileManager.getBitfield();
-			int messageLength = 1 + bitfield.size();
-			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-			return bitfieldMessage;
-
-		} 
-		
-		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !bitfieldReceived) {
-			// Send interested / not interested
-			// Wait for unchoked message
-			connectionState.setWaiting(true);
-			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-			bitfieldReceived = true;
-			if (indexOfMissingPiece != -1) {
-				// We want a piece from the Server.
-				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
-				return new RegularMessage(1, MessageType.interested, null);
-			} else {
-				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
-				return new RegularMessage(1, MessageType.notInterested, null);
-			}
-		} 
-		
-		else if (connectionState.getHasReceivedPiece() == true) {
-			// Let Peer know so it can broadcast its updated bitmap
-			System.out.println("Peer has received piece...client preparing to send Have message.");
-			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
-			shouldSendHaveMessage = false;
-			connectionState.setHasReceivedPiece(false);
-			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		} 
-		
-		else if (shouldSendHaveMessage) {
-			// broadcast the updated bitmap
-			shouldSendHaveMessage = false;
-			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-		} 
-		
-		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true) {
-			// Send request messages until choked
-			connectionState.setWaiting(false);
-			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-			System.out.println("index of missing piece is: " + indexOfMissingPiece);
-			if (indexOfMissingPiece == -1) {
-				connectionState.setInterested(false);
-				System.out.println("Not interested in any file pieces from " + this.serverAddress);
-				return new RegularMessage(1, MessageType.notInterested, null);
-			} else {
-				System.out.println("Interested in a file piece from " + this.serverAddress);
-				return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
-			}
-		} 
-		
-		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
-			// Wait until unchoked to send more request messages
-			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
-			connectionState.setWaiting(true);
+//		
+//		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+//			// Send Bitfield
+//			System.out.println("Building bitfield message to send to server.");
+//			BitSet bitfield = fileManager.getBitfield();
+//			int messageLength = 1 + bitfield.size();
+//			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
+//			return bitfieldMessage;
+//
+//		} 
+//		
+//		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveHandledBitfieldMessage) {
+//			haveHandledBitfieldMessage = true;
+//			
+//			// Determine if the server has a bitfiled with pieces not in our bitfield. 
+//			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+//
+//			// If the server has pieces we want, we send an interested message.
+//			if (indexOfMissingPiece != -1) {
+//				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
+//				return new RegularMessage(1, MessageType.interested, null);
+//			} 
+//			// Otherwise,  we send a not interested message.
+//			else {
+//				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
+//				return new RegularMessage(1, MessageType.notInterested, null);
+//			}
+//		} 
+//		
+//		// This spcific client received a full piece, so we should tell the Peer the tell all other clients to send have messages. 
+//		else if (connectionState.hasReceivedPiece() == true) {
+//			System.out.println("Peer has received piece...client preparing to send Have message.");
+//			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
+//			shouldSendHaveMessage = false;
+//			connectionState.setHasReceivedPiece(false);
+//			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
+//		} 
+//		
+//		// A have message was received by some Client on this Peer so we should also send a have message. 
+//		else if (shouldSendHaveMessage) {
+//			shouldSendHaveMessage = false;
+//			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
+//		} 
+//		
+//		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true) {
+//			// Send request messages until choked
+//			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
+//			System.out.println("index of missing piece is: " + indexOfMissingPiece);
+//			if (indexOfMissingPiece == -1) {
+//				connectionState.setInterested(false);
+//				System.out.println("Not interested in any file pieces from " + this.serverAddress);
+//				return new RegularMessage(1, MessageType.notInterested, null);
+//			} else {
+//				System.out.println("Interested in a file piece from " + this.serverAddress);
+//				return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
+//			}
+//		} 
+//		
+//		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
+//			// Wait until unchoked to send more request messages
+//			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
+//		}
+		else {
+			while(true) {}
 		}
-		return null;
 	}
+	
+//	private void clientShouldBeWaitingForMessages() {
+//
+//		if (!connectionState.haveReceivedHandshake()) {
+//			connectionState.setWaiting(false);
+//		}
+//
+//		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+//			connectionState.setWaiting(false);
+//		}
+//
+//		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveHandledBitfieldMessage) {
+//			connectionState.setWaiting(false);
+//		}
+//		
+//		else if (connectionState.hasReceivedPiece() == true) {
+//			connectionState.setWaiting(false);
+//		}
+//		
+//		else if (shouldSendHaveMessage) {
+//			connectionState.setWaiting(false);
+//		}
+//		
+//		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == false) {
+//			connectionState.setWaiting(true);
+//		}
+//
+//		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == true) {
+//			connectionState.setWaiting(false);
+//		}
+//
+//		else 
+//			connectionState.setWaiting(false);
+//	}
 
 	public void run()
 	{
 		try{
 			
-			// Time for all servers to start before clients start sending messages. 
+			// Time for all servers to start before clients start sending initial messages. 
 			TimeUnit.SECONDS.sleep(5);
 
 			// Create a socket to connect to the server.
@@ -234,28 +274,37 @@ public class Client implements Runnable {
 			{
 				System.out.println("\n\n\nStart-Client----------------------------------------------------------------------");
 				p2pProtocol.reset();
+				
+				Message messageToSend = getNextMessageToSend();
+				
+				p2pProtocol.sendMessage(out, messageToSend);
+				p2pProtocol.receiveMessage(in);
 
-				if (this.connectionState != null && this.connectionState.isWaiting()) {
-
-					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is interested in " + getServerPeerId() + ": " + connectionState.isInterested());
-					System.out.println("Client " + fileManager.getThisPeerIdentifier() + "is choked by " + getServerPeerId() + ": " + connectionState.isChoked());
-					p2pProtocol.receiveMessage(in);
-
-					Message messageToSend = getNextMessageToSend();
-
-
-					p2pProtocol.sendMessage(out, messageToSend);
-
-				} else {
-
-					Message messageToSend = getNextMessageToSend();
-					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
-
-					if (messageToSend != null) {
-						p2pProtocol.sendMessage(out, messageToSend);
-						p2pProtocol.receiveMessage(in);
-					} 
-				}
+//				// If we haven't completed a handshake or should be waiting for messages. 
+//				if (this.connectionState != null && this.connectionState.isWaiting()) {
+//					System.out.println("Client is in waiting state.");
+//
+//					p2pProtocol.receiveMessage(in);
+//
+//					Message messageToSend = getNextMessageToSend();
+//
+//
+//					p2pProtocol.sendMessage(out, messageToSend);
+//
+//				} 
+//				
+//				// We have completed a handshake and should not be waiting for messages.
+//				else {
+//					System.out.println("Client is in sending state.");
+//
+//					Message messageToSend = getNextMessageToSend();
+//					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
+//
+//					if (messageToSend != null) {
+//						p2pProtocol.sendMessage(out, messageToSend);
+//						p2pProtocol.receiveMessage(in);
+//					} 
+//				}
 
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
 			}

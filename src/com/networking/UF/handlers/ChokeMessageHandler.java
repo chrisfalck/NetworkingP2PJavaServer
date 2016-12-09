@@ -32,9 +32,9 @@ public class ChokeMessageHandler implements MessageHandler {
 			logger.logChokingEvent(myClient.getServerPeerId());
     	}
     	else{
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
-	    	connectionState.setChoked(true);
-	    	myServer.setConnectionState(peerId, connectionState);
+	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
+	    	connectionState.setClientIsChoked(true);
+	    	myServer.setClientConnectionState(peerId, connectionState);
     	}
         return false;
     }

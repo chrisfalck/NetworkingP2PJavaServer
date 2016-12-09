@@ -40,12 +40,11 @@ public class BitfieldMessageHandler implements MessageHandler {
     	// a bitfield message. 
     	if (myClient != null) {
     		myClient.setHaveReceivedBitfield(true);
-    		myClient.setServerBitfield(newBitfield);
+    		myClient.setBitfieldOfServer(newBitfield);
     	} else {
-    		ConnectionState connectionState = myServer.getConnectionState(peerId);
-    		connectionState.setBitfield(newBitfield);
-    		connectionState.setHaveReceivedBitfield(true);
-    		myServer.setConnectionState(peerId, connectionState);
+    		ConnectionState connectionState = myServer.getClientConnectionState(peerId);
+    		connectionState.setClientBitfield(newBitfield);
+    		myServer.setClientConnectionState(peerId, connectionState);
     	}
     	
         return false;

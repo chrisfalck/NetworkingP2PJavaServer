@@ -25,15 +25,13 @@ public class HandshakeMessageHandler implements MessageHandler {
 		this.myProtocol = protocol;
 	}
 
-	@Override
 	public boolean receiveMessage(Message message) {
 		if (message.getMessageType() != "handshake")
 			return false;
 
 		HandshakeMessage messageCast = (HandshakeMessage) message;
 
-		// This is so non HandshakeMessage(s) have access to the connected peer
-		// id.
+		// This is so non HandshakeMessage(s) have access to the connected peer id.
 		myProtocol.setConnectedPeerId(messageCast.getPeerId());
 
 		// Determine what state to change depending on if we're a Client or
@@ -41,16 +39,14 @@ public class HandshakeMessageHandler implements MessageHandler {
 		if (myClient != null) {
 			myClient.setHaveReceivedHandshake(true);
 		} else if (myServer != null){
-			ConnectionState connectionState = myServer.getConnectionState(messageCast.getPeerId());
+			ConnectionState connectionState = myServer.getClientConnectionState(messageCast.getPeerId());
 
 			// If a connection state doesn't already exist for this peer id, create one.
 			if (connectionState == null) {
 				connectionState = new ConnectionState(messageCast.getPeerId());
-				connectionState.setWaiting(true);
 			}
 
-			connectionState.setHaveReceivedHandshake(true);
-			myServer.setConnectionState(messageCast.getPeerId(), connectionState);
+			myServer.setClientConnectionState(messageCast.getPeerId(), connectionState);
 		} else {
 			System.err.println("The handler needs a valid server or client to edit state information.");
 		}
@@ -58,7 +54,6 @@ public class HandshakeMessageHandler implements MessageHandler {
 		return true;
 	}
 
-	@Override
 	public byte[] prepareMessageForSending(Message message) {
 		return message.toByteArray();
 	}

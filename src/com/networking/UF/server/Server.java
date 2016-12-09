@@ -25,14 +25,23 @@ public class Server implements Runnable {
 	private int numPreferredNeighbors = 0;
 	Peer myPeer;
 
-	ConcurrentHashMap<Integer, ConnectionState> connectionStates = new ConcurrentHashMap<Integer, ConnectionState>();
+	ConcurrentHashMap<Integer, ConnectionState> clientConnectionStates = new ConcurrentHashMap<Integer, ConnectionState>();
+
+	public ConnectionState getClientConnectionState(Integer peerId) {
+		return clientConnectionStates.get(peerId);
+	}
+	public synchronized void setClientConnectionState(Integer peerId, ConnectionState connectionState) {
+		clientConnectionStates.put(peerId, connectionState);
+		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + " updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
+	}
+	
+	public void setNumPreferredNeighbors(int numPreferredNeighbors) {
+		this.numPreferredNeighbors = numPreferredNeighbors;
+	}
+
 	
 	public Server(Peer myPeer) {
 		this.myPeer = myPeer;
-	}
-	
-	public ConnectionState getConnectionState(Integer peerId) {
-		return connectionStates.get(peerId);
 	}
 	
 	private class PeerAndSpeed {
@@ -49,24 +58,24 @@ public class Server implements Runnable {
 		try {
 			ArrayList<Integer> peerIds = new ArrayList<Integer>();
 
-			Enumeration<Integer> connectionStateKeys = connectionStates.keys();
+			Enumeration<Integer> connectionStateKeys = clientConnectionStates.keys();
 			while(connectionStateKeys.hasMoreElements()) {
-				peerIds.add(connectionStates.get(connectionStateKeys.nextElement()).getPeerId());
+				peerIds.add(clientConnectionStates.get(connectionStateKeys.nextElement()).getPeerIdOfConnectedClient());
 			}
 
 			int randomPeerId = peerIds.get(generator.nextInt(peerIds.size()));
 			while (true) {
-				boolean isNotPreferredNeighbor = (connectionStates.get(randomPeerId).isChoked() == true);
-				boolean isNotOwnPeer = (connectionStates.get(randomPeerId).getPeerId() != fileManager.getThisPeerIdentifier());
+				boolean isNotPreferredNeighbor = (clientConnectionStates.get(randomPeerId).clientIsChoked() == true);
+				boolean isNotOwnPeer = (clientConnectionStates.get(randomPeerId).getPeerIdOfConnectedClient() != fileManager.getThisPeerIdentifier());
 				if (isNotOwnPeer && isNotPreferredNeighbor) break;
 				else {
 					randomPeerId = generator.nextInt(ConfigParser.parsePeerInfoFile().getConfigLength());
 				}
 			}
 
-			connectionStates.get(randomPeerId).setOptimisticallyUnchoked(true);
-			connectionStates.get(randomPeerId).setNeedToUpdateOptimisticNeighbor(true);
-			logger.logChangeOfOptimisticallyUnchokedNeighbor(connectionStates.get(randomPeerId).getPeerId());
+			clientConnectionStates.get(randomPeerId).setClientIsOptimisticallyUnchoked(true);
+			clientConnectionStates.get(randomPeerId).setNeedToUpdateOptimisticNeighbor(true);
+			logger.logChangeOfOptimisticallyUnchokedNeighbor(clientConnectionStates.get(randomPeerId).getPeerIdOfConnectedClient());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -79,15 +88,15 @@ public class Server implements Runnable {
 	 */
 	public void updatePreferredNeighbors() {
 //		System.out.println("Entered updatePreferredNeighbors() block");
-		ConcurrentHashMap<Integer,ConnectionState> myServerConnectionStates = connectionStates;
+		ConcurrentHashMap<Integer,ConnectionState> myServerConnectionStates = clientConnectionStates;
 		Enumeration<Integer> peerIds = myServerConnectionStates.keys();
 		ArrayList<PeerAndSpeed> unsortedPeers = new ArrayList<PeerAndSpeed>();
 		ArrayList<PeerAndSpeed> sortedPeers = new ArrayList<PeerAndSpeed>();
 		while(peerIds.hasMoreElements()) {
 			int currentPeerId = peerIds.nextElement();
 			ConnectionState currentConnectionState = myServerConnectionStates.get(currentPeerId);
-			if (currentConnectionState.isInterested() == true){
-				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getConnectionSpeed()));
+			if (currentConnectionState.clientIsInterested() == true){
+				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getClientConnectionSpeed()));
 			} else {
 //				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}
@@ -126,13 +135,13 @@ public class Server implements Runnable {
 			for (int i = 0; i < myServerConnectionStates.size(); ++i) {
 				if (i < sortedPeers.size()) {
 					if (i < numPreferredNeighbors) {
-						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(false);
+						clientConnectionStates.get(sortedPeers.get(i).peerAndSpeedId).setClientIsChoked(false);
 						preferredNeighbors.add(sortedPeers.get(i).peerAndSpeedId);
 					} else {
-						connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setChoked(true);
+						clientConnectionStates.get(sortedPeers.get(i).peerAndSpeedId).setClientIsChoked(true);
 					}
 					System.out.println("Server is setting need to update preferred neighbors on peer " + sortedPeers.get(i).peerAndSpeedId);
-					connectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
+					clientConnectionStates.get(sortedPeers.get(i).peerAndSpeedId).setNeedToUpdatePreferredNeighbors(true);
 				}
 			}
 			if (preferredNeighbors.size() > 0) {
@@ -143,15 +152,6 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public synchronized void setConnectionState(Integer peerId, ConnectionState connectionState) {
-		connectionStates.put(peerId, connectionState);
-		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + " updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
-	}
-
-	public void setNumPreferredNeighbors(int numPreferredNeighbors) {
-		this.numPreferredNeighbors = numPreferredNeighbors;
-	}
-
 	public void run() {
 		try {
 			System.out.println("The server is running."); 
@@ -193,6 +193,14 @@ public class Server implements Runnable {
 		private P2PProtocol p2pProtocol;
 		
 		private boolean haveSentBitfield = false;
+		
+		public boolean shouldWaitForMessagesFromClient = true;
+		public boolean shouldWaitForMessagesFromClient() {
+			return shouldWaitForMessagesFromClient;
+		}
+		public void setShouldWaitForMessagesFromClient(boolean shouldWaitForMessagesFromClient) {
+			this.shouldWaitForMessagesFromClient = shouldWaitForMessagesFromClient;
+		}
 
 		public Handler(Socket connection, int no, Server server) {
 			this.connection = connection;
@@ -208,83 +216,93 @@ public class Server implements Runnable {
 		 * @throws InterruptedException
 		 */
 		private Message getNextMessageToSend() throws InterruptedException {
-			ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
+			ConnectionState connectionState = myServer.getClientConnectionState(p2pProtocol.getConnectedPeerId());
 			
 			// If we haven't send a handshake message. 
-			if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
+			if (!connectionState.haveSentHandshakeToClient()) {
 				// Send Handshake
 				System.out.println("Building handshake message to send to client.");
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
 			
-			// If we haven't send a bitfield message. 
-			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveSentBitfield) {
-				System.out.println("Building bitfield message to send to client.");
-				BitSet bitfield = fileManager.getBitfield();
-				int messageLength = 1 + bitfield.toByteArray().length;
-				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-				haveSentBitfield = true;
-				return bitfieldMessage;
-			} 
+//			// If we haven't send a bitfield message. 
+//			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveSentBitfield) {
+//				System.out.println("Building bitfield message to send to client.");
+//				BitSet bitfield = fileManager.getBitfield();
+//				int messageLength = 1 + bitfield.toByteArray().length;
+//				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
+//				haveSentBitfield = true;
+//				return bitfieldMessage;
+//			} 
+//			
+//			// If we have a file index we should send in response to a request message. 
+//			else if (connectionState.getFileIndexToSend() != -1) {
+//				connectionState.setWaiting(true);
+//				
+//				// If the client asked us for a piece but was choked before we replied. 
+//				if (connectionState.isChoked()) {
+//					System.out.println("Building choke message to send to client.");
+//					return new RegularMessage(1, MessageType.choke, null);
+//				} 
+//				// We received a request message and the client is not choked. 
+//				else {
+//					int fileIndex = connectionState.getFileIndexToSend();
+//					connectionState.setFileIndexToSend(-1);
+//					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
+//					System.out.println("Preparing a piece message to send to client");
+//					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));
+//				}
+//			}
+//
+//			// Determine whether we should send a choke or unchoke message based on who 
+//			// the new preferred neighbors are. 
+//			else if (connectionState.needToUpdatePreferredNeighbors()) {
+//				connectionState.setNeedToUpdatePreferredNeighbors(false);
+//
+//				boolean choked = connectionState.isChoked();
+//
+//				if (choked) {
+//					System.out.println("Building choke message to send to client with state:\n" + connectionState.toString());
+//
+//					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
+//
+//					connectionState.setFileIndexToSend(-1);
+//
+//					// The server should no longer be waiting for messsages from this client. 
+//					connectionState.setWaiting(false);
+//
+//					return chokeMessage;
+//				} else {
+//					// The server should now wait for request messages from this client. 
+//					connectionState.setWaiting(true);
+//					System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
+//					RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
+//
+//					return unchokeMessage;
+//				}
+//			}
+//
+//			else if (connectionState.needToUpdateOptimisticNeighbor()) {
+//				// Send Choke / Unchoke
+//				System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
+//				connectionState.setNeedToUpdateOptimisticNeighbor(false);
+//				RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
+//				// Now wait for a request
+//				connectionState.setWaiting(true);
+//
+//				return unchokeMessage;
+//			} 
 			
-			// If we have a file index we should send in response to a request message. 
-			else if (connectionState.getFileIndexToSend() != -1) {
-				connectionState.setWaiting(true);
+			// If we received a message and are not in a state to send anything back, return null.
+			else {
+				while(true) {}
+			}
+		}
+		
+		private void serverShouldBeWaitingForMessages() {
+			ConnectionState stateOfConnectionToClient = myServer.getClientConnectionState(p2pProtocol.getConnectedPeerId());
+			if (stateOfConnectionToClient == null) {
 				
-				// If the client asked us for a piece but was choked before we replied. 
-				if (connectionState.isChoked()) {
-					System.out.println("Building choke message to send to client.");
-					return new RegularMessage(1, MessageType.choke, null);
-				} 
-				// We received a request message and the client is not choked. 
-				else {
-					int fileIndex = connectionState.getFileIndexToSend();
-					connectionState.setFileIndexToSend(-1);
-					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
-					System.out.println("Preparing a piece message to send to client");
-					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));
-				}
-			}
-
-			// Determine whether we should send a choke or unchoke message based on who 
-			// the new preferred neighbors are. 
-			else if (connectionState.isNeedToUpdatePreferredNeighbors()) {
-				connectionState.setNeedToUpdatePreferredNeighbors(false);
-
-				boolean choked = connectionState.isChoked();
-
-				if (choked) {
-					System.out.println("Building choke message to send to client with state:\n" + connectionState.toString());
-
-					RegularMessage chokeMessage = new RegularMessage(1, MessageType.choke, null);
-
-					connectionState.setFileIndexToSend(-1);
-
-					// The server should no longer be waiting for messsages from this client. 
-					connectionState.setWaiting(false);
-
-					return chokeMessage;
-				} else {
-					// The server should now wait for request messages from this client. 
-					connectionState.setWaiting(true);
-					System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
-					RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
-
-					return unchokeMessage;
-				}
-			}
-
-			else if (connectionState.isNeedToUpdateOptimisticNeighbor()) {
-				// Send Choke / Unchoke
-				System.out.println("Building unchoke message to send to client with state:\n" + connectionState.toString());
-				connectionState.setNeedToUpdateOptimisticNeighbor(false);
-				RegularMessage unchokeMessage = new RegularMessage(1, MessageType.unchoke, null);
-				// Now wait for a request
-				connectionState.setWaiting(true);
-
-				return unchokeMessage;
-			} else {
-				return null;
 			}
 		}
 
@@ -299,41 +317,45 @@ public class Server implements Runnable {
 					// Most of the business logic of the server will happen in this while loop.
 					while(true)
 					{
-						ConnectionState connectionState = myServer.getConnectionState(p2pProtocol.getConnectedPeerId());
+						ConnectionState connectionState = myServer.getClientConnectionState(p2pProtocol.getConnectedPeerId());
 						p2pProtocol.reset();
 						
-						if (connectionState == null || connectionState.isWaiting()) {
-							System.out.println("Inside the server waiting block.");
-							
-							p2pProtocol.receiveMessage(in);
-
-							Message messageToSend = getNextMessageToSend();
-							if (messageToSend != null) {
-								System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
-								p2pProtocol.sendMessage(out, messageToSend);
-							}
-						} else {
-							System.out.println("Inside the server sending block.");
-
-							// Wait until (We need to send choke or unchoke messages) OR (We receive a have message).
-							System.out.println("Beginning the in.available() wait loop.");
-							while (in.available() == 0) {
-								if (connectionState.isNeedToUpdateOptimisticNeighbor() || connectionState.isNeedToUpdatePreferredNeighbors()) break;
-							}
-							System.out.println("Exiting the in.available() wait loop.");
-							
-							if (in.available() == 0) {
-								System.out.println("Broke out of message existence checking to send unchoke message.");
-								Message messageToSend = getNextMessageToSend();
-								p2pProtocol.sendMessage(out, messageToSend);
-							} else {
-								System.out.println("Broke out of message existence checking to accept have message.");
-								p2pProtocol.receiveMessage(in);
-								Message messageToSend = getNextMessageToSend();
-								if (messageToSend != null) p2pProtocol.sendMessage(out, messageToSend);
-							}
-
-						}
+						p2pProtocol.receiveMessage(in);
+						Message messageToSend = getNextMessageToSend();
+						p2pProtocol.sendMessage(out, messageToSend);
+//						
+//						if (connectionState == null || connectionState.isWaiting()) {
+//							System.out.println("Inside the server waiting block.");
+//							
+//							p2pProtocol.receiveMessage(in);
+//
+//							Message messageToSend = getNextMessageToSend();
+//							if (messageToSend != null) {
+//								System.out.println("Sending message to client: " + p2pProtocol.getConnectedPeerId());
+//								p2pProtocol.sendMessage(out, messageToSend);
+//							}
+//						} else {
+//							System.out.println("Inside the server sending block.");
+//
+//							// Wait until (We need to send choke or unchoke messages) OR (We receive a have message).
+//							System.out.println("Beginning the in.available() wait loop.");
+//							while (in.available() == 0) {
+//								if (connectionState.needToUpdateOptimisticNeighbor() || connectionState.needToUpdatePreferredNeighbors()) break;
+//							}
+//							System.out.println("Exiting the in.available() wait loop.");
+//							
+//							if (in.available() == 0) {
+//								System.out.println("Broke out of message existence checking to send unchoke message.");
+//								Message messageToSend = getNextMessageToSend();
+//								p2pProtocol.sendMessage(out, messageToSend);
+//							} else {
+//								System.out.println("Broke out of message existence checking to accept have message.");
+//								p2pProtocol.receiveMessage(in);
+//								Message messageToSend = getNextMessageToSend();
+//								if (messageToSend != null) p2pProtocol.sendMessage(out, messageToSend);
+//							}
+//
+//						}
 						System.out.println("End-Server------------------------------------------------------------------------\n\n\n");
 					}
 				}

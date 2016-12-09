@@ -33,17 +33,17 @@ public class HaveMessageHandler implements MessageHandler {
     	if (myServer != null){
 	    	byte[] index = messageCast.getMessagePayload();
 
-	    	ConnectionState connectionState = myServer.getConnectionState(peerId);
+	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
 	    	ConnectionState updatedConnectionState = BitfieldUtils.updateServerOwnedClientConnectionState(index, connectionState);
 
 	    	if(fileManager.getFilePieceAtIndex(Ints.fromByteArray(index)).length == 0){
-	    		updatedConnectionState.setInterested(true);
+	    		updatedConnectionState.setClientIsInterested(true);
 	    	}
 	    	else{
-	    		updatedConnectionState.setInterested(false);
+	    		updatedConnectionState.setClientIsInterested(false);
 	    	}
 
-	    	myServer.setConnectionState(peerId, updatedConnectionState);
+	    	myServer.setClientConnectionState(peerId, updatedConnectionState);
 			logger.logReceiptOfHaveMessage(peerId, Ints.fromByteArray(index));
     	}
     	 return false;
