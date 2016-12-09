@@ -250,7 +250,7 @@ public class P2PProtocol implements Protocol {
 		case 7:
 			PieceMessageHandler pieceMessageHandler;
 
-			pieceMessageHandler = new PieceMessageHandler(myServer, connectedPeerId);
+			pieceMessageHandler = new PieceMessageHandler(myClient);
 
 			pieceMessageHandler.receiveMessage(regularMessage);
 

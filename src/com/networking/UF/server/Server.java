@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.primitives.Bytes;
+import com.google.common.primitives.Ints;
 import com.networking.UF.ConfigParser;
 import com.networking.UF.FileManager;
 import com.networking.UF.Logger;
@@ -245,7 +247,8 @@ public class Server implements Runnable {
 				connectionState.setFileIndexToSendToClient(-1);
 
 				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
-				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));			
+				byte[] pieceMessagePayload = Bytes.concat(Ints.toByteArray(fileIndex), fileManager.getFilePieceAtIndex(fileIndex));
+				return new RegularMessage(messageLengthFTS, MessageType.piece, pieceMessagePayload);			
 			}
 			
 			else if (connectionState.needToRespondToClientInterestedStatus()) {
