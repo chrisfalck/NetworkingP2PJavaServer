@@ -32,7 +32,8 @@ public class Server implements Runnable {
 	}
 	public synchronized void setClientConnectionState(Integer peerId, ConnectionState connectionState) {
 		clientConnectionStates.put(peerId, connectionState);
-		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + " updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
+		System.out.println("\nServer for peer " + fileManager.getThisPeerIdentifier() + 
+				" updated connection state for peer " + peerId + ".\n" + connectionState.toString() + "\n");
 	}
 	
 	public void setNumPreferredNeighbors(int numPreferredNeighbors) {
@@ -96,7 +97,7 @@ public class Server implements Runnable {
 			int currentPeerId = peerIds.nextElement();
 			ConnectionState currentConnectionState = myServerConnectionStates.get(currentPeerId);
 			if (currentConnectionState.clientIsInterested() == true){
-				unsortedPeers.add(new PeerAndSpeed(currentPeerId, currentConnectionState.getClientConnectionSpeed()));
+				unsortedPeers.add(new PeerAndSpeed(currentPeerId, 5));
 			} else {
 //				System.out.println("Skipping: " + currentPeerId + " " + currentConnectionState.getConnectionSpeed());
 			}

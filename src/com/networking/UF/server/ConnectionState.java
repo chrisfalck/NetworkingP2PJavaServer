@@ -12,26 +12,24 @@ public class ConnectionState {
 	private boolean choked = true;
 	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
-	private boolean hasReceivedPiece = false;
-	private boolean hasReceivedHave = false;
 	private int fileIndexToSend = -1;
 	private BitSet bitfield = null;
-	private boolean waiting = false;
-	private long connectionSpeed = 0;
+	private boolean haveReceivedHave = false;
 	private boolean needToUpdatePreferredNeighbors = false;
 	private boolean needToUpdateOptimisticNeighbor = false;
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
-						  "hasReceivedPiece: " + hasReceivedPiece + "\n" + 
-						  "choked: " + choked + "\n" +
-						  "optimisticallyUnchoked: " + optimisticallyUnchoked + "\n" + 
-						  "connectionSpeed: " + connectionSpeed + "\n" + 
-						  "interested: " + interested + "\n" + 
-						  "fileIndexToSend: " + fileIndexToSend + "\n" +
-						  "hasReceivedHave: " + hasReceivedHave + "\n" +
-						  "waiting: " + waiting + "\n" + 
-						  "bitfield size: " + ((bitfield == null) ? "0" : bitfield.size()));
+						  "Have sent handshake to client: " + haveSentHandshakeToClient() + "\n" +
+						  "Have sent bitfield to client: " + haveSentBitfieldToClient() + "\n" +
+						  "Client has sent a have message: " + getHaveReceivedHaveMsgFromClient() + "\n" +
+						  "Client is currently choked: " + clientIsChoked() + "\n" + 
+						  "Client is currently optimistically unchoked: " + clientIsOptimisticallyUnchoked() + "\n" + 
+						  "Client is interested in this server: " + clientIsInterested() + "\n" + 
+						  "Server needs to update this client's preferred neighbor status: " + needToUpdatePreferredNeighbors() + "\n" + 
+						  "Server needs to update this client's optimistic neighbor status: " + needToUpdateOptimisticNeighbor() + "\n" + 
+						  "File index to send to client: " + getFileIndexToSendToClient() + "\n" + 
+						  "Bitfield size: " + ((getClientBitfield().length() == 0) ? "0" : bitfield.size()));
 	}
 	
 	public ConnectionState(int peerId) {
@@ -68,13 +66,6 @@ public class ConnectionState {
 		this.optimisticallyUnchoked = optimisticallyUnchoked;
 	}
 
-	public long getClientConnectionSpeed() {
-		return connectionSpeed;
-	}
-	public void setClientConnectionSpeed(long connectionSpeed) {
-		this.connectionSpeed = connectionSpeed;
-	}
-	
 	public boolean clientIsChoked() {
 		return choked;
 	}
@@ -104,19 +95,12 @@ public class ConnectionState {
 	}
 	
 	public boolean getHaveReceivedHaveMsgFromClient(){
-		return hasReceivedHave;
+		return haveReceivedHave;
 	}
 	public void setHaveReceivedHaveMsgFromClient(boolean b) {
-		this.hasReceivedHave = b;	
+		this.haveReceivedHave = b;	
 	}
 
-	public boolean serverShouldWaitForMsgFromClient() {
-		return waiting;
-	}
-	public void setServerShouldWaitForMsgFromClient(boolean waiting) {
-		this.waiting = waiting;
-	}
-	
 	public boolean needToUpdatePreferredNeighbors() {
 		return needToUpdatePreferredNeighbors;
 	}
