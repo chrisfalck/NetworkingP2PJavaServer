@@ -32,8 +32,8 @@ public class PieceMessageHandler implements MessageHandler {
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
     	
-    	byte[] filePieceIndexBytes = new byte[]{messageCast.getMessagePayload()[1]};
-    	int filePieceIndex = Ints.fromByteArray(filePieceIndexBytes);
+    	byte[] paddingAdded = new byte[]{0, 0, 0, messageCast.getMessagePayload()[1]};
+    	int filePieceIndex = Ints.fromByteArray(paddingAdded);
     	
     	System.out.println("Received message index: " + filePieceIndex + " from server.");
 
@@ -44,7 +44,7 @@ public class PieceMessageHandler implements MessageHandler {
     		myClient.setShouldDealWithPieceMessage(true);
 
     		// For use in the have message cascade. 
-    		myClient.setCurrentHaveMessageIndexToSend(filePieceIndexBytes);
+    		myClient.setCurrentHaveMessageIndexToSend(paddingAdded);
 
     		fileManager.addFilePiece(filePieceIndex, filePieceContentBytes);
     		System.out.println("New length of file piece at index " + filePieceIndex + 
