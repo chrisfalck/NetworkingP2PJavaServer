@@ -235,20 +235,32 @@ public class Server implements Runnable {
 				BitSet bitfield = fileManager.getBitfield();
 				return new RegularMessage(1 + bitfield.toByteArray().length, MessageType.bitfield, bitfield.toByteArray());
 			} 
-//			
+			
+			else if (connectionState.needToRespondToClientInterestedStatus()) {
+				connectionState.setNeedToRespondToClientInterestedStatus(false);
+				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
+				
+				if (connectionState.clientIsChoked() || !connectionState.clientIsInterested()) {
+					System.out.println("Building choke message to send to client.");
+					return new RegularMessage(1, MessageType.choke, null);
+				} else {
+					System.out.println("Building unchoke message to send to client.");
+					return new RegularMessage(1, MessageType.unchoke, null);
+				}
+			}
+			
 //			// If we have a file index we should send in response to a request message. 
-//			else if (connectionState.getFileIndexToSend() != -1) {
-//				connectionState.setWaiting(true);
+//			else if (connectionState.getFileIndexToSendToClient() != -1) {
 //				
 //				// If the client asked us for a piece but was choked before we replied. 
-//				if (connectionState.isChoked()) {
+//				if (connectionState.clientIsChoked()) {
 //					System.out.println("Building choke message to send to client.");
 //					return new RegularMessage(1, MessageType.choke, null);
 //				} 
 //				// We received a request message and the client is not choked. 
 //				else {
-//					int fileIndex = connectionState.getFileIndexToSend();
-//					connectionState.setFileIndexToSend(-1);
+//					int fileIndex = connectionState.getFileIndexToSendToClient();
+//					connectionState.setFileIndexToSendToClient(-1);
 //					int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
 //					System.out.println("Preparing a piece message to send to client");
 //					return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));
@@ -296,6 +308,9 @@ public class Server implements Runnable {
 			
 			// If we received a message and are not in a state to send anything back, return null.
 			else {
+				System.out.println("Waiting for further implementation.");
+				System.out.println("Final client state:");
+				System.out.println(connectionState.toString());
 				while(true) {}
 			}
 		}

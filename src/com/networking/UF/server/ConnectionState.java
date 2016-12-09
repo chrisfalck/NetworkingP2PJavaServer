@@ -13,10 +13,11 @@ public class ConnectionState {
 	private boolean optimisticallyUnchoked = false;
 	private boolean interested = false;
 	private int fileIndexToSend = -1;
-	private BitSet bitfield = null;
+	private BitSet bitfield = new BitSet();
 	private boolean haveReceivedHave = false;
 	private boolean needToUpdatePreferredNeighbors = false;
 	private boolean needToUpdateOptimisticNeighbor = false;
+	private boolean needToRespondToClientInterestedStatus = false;
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
@@ -113,5 +114,13 @@ public class ConnectionState {
 	}
 	public void setNeedToUpdateOptimisticNeighbor(boolean needToUpdateOptimisticNeighbor) {
 		this.needToUpdateOptimisticNeighbor = needToUpdateOptimisticNeighbor;
+	}
+
+	public boolean needToRespondToClientInterestedStatus() {
+		return needToRespondToClientInterestedStatus;
+	}
+
+	public void setNeedToRespondToClientInterestedStatus(boolean needToRespondToClientInterestedStatus) {
+		this.needToRespondToClientInterestedStatus = needToRespondToClientInterestedStatus;
 	}
 }

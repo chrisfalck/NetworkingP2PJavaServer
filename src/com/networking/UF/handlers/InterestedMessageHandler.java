@@ -27,17 +27,16 @@ public class InterestedMessageHandler implements MessageHandler {
 		myServer = server;
 		this.peerId = peerId;
 	}
-	//
+	
     public boolean receiveMessage(Message message) {
-    	RegularMessage messageCast = (RegularMessage)message;
     	if (myClient != null) {
     		System.out.println("Client " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message.");
     		myClient.setInterested(true);
     	} else {
-
     		System.out.println("Server " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message from " + peerId);
     		ConnectionState connectionState = myServer.getClientConnectionState(peerId);
     		connectionState.setClientIsInterested(true);
+    		connectionState.setNeedToRespondToClientInterestedStatus(true);
     		myServer.setClientConnectionState(peerId, connectionState);
 			logger.logReceiptOfInterestedMessage(peerId);
     	}

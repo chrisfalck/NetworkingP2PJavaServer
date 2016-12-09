@@ -39,6 +39,7 @@ public class UninterestedMessageHandler implements MessageHandler {
     		System.out.println("Peer " + FileManager.getInstance().getThisPeerIdentifier() + " received interested message from " + peerId);
     		ConnectionState connectionState = myServer.getClientConnectionState(peerId);
     		connectionState.setClientIsInterested(false);
+    		connectionState.setNeedToRespondToClientInterestedStatus(true);
     		myServer.setClientConnectionState(peerId, connectionState);
 			logger.logReceiptOfNotInterestedMessage(peerId);
     	}

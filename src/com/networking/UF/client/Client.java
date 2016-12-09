@@ -141,6 +141,8 @@ public class Client implements Runnable {
 		this.myPeer = myPeer;
 	}
 	
+	private boolean haveSentFirstInterestStatus = false;
+	
 	/**
 	 * Determines the next message the client should send by analysing the client's state variables. 
 	 * Returns an appropriate built message to be sent. 
@@ -159,25 +161,25 @@ public class Client implements Runnable {
 			BitSet bitfield = fileManager.getBitfield();
 			return new RegularMessage(1 + bitfield.size(), MessageType.bitfield, bitfield.toByteArray());
 		} 
-//		
-//		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveHandledBitfieldMessage) {
-//			haveHandledBitfieldMessage = true;
-//			
-//			// Determine if the server has a bitfiled with pieces not in our bitfield. 
-//			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-//
-//			// If the server has pieces we want, we send an interested message.
-//			if (indexOfMissingPiece != -1) {
-//				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending interested message.");
-//				return new RegularMessage(1, MessageType.interested, null);
-//			} 
-//			// Otherwise,  we send a not interested message.
-//			else {
-//				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " just got the bitfield and is sending not interested message.");
-//				return new RegularMessage(1, MessageType.notInterested, null);
-//			}
-//		} 
-//		
+		
+		else if (haveReceivedHandshake() && haveReceivedBitfield() && !haveSentFirstInterestStatus) {
+			haveSentFirstInterestStatus = true;
+			
+			// Determine if the server has a bitfiled with pieces not in our bitfield. 
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
+
+			// If the server has pieces we want, we send an interested message.
+			if (indexOfMissingPiece != -1) {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending an interested message");
+				return new RegularMessage(1, MessageType.interested, null);
+			} 
+			// Otherwise,  we send a not interested message.
+			else {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending a not interested message.");
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+		} 
+		
 //		// This spcific client received a full piece, so we should tell the Peer the tell all other clients to send have messages. 
 //		else if (connectionState.hasReceivedPiece() == true) {
 //			System.out.println("Peer has received piece...client preparing to send Have message.");
@@ -212,6 +214,7 @@ public class Client implements Runnable {
 //			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
 //		}
 		else {
+			System.out.println("Waiting for further implementation.");
 			while(true) {}
 		}
 	}
