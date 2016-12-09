@@ -180,6 +180,10 @@ public class Client implements Runnable {
 		else if (shouldDealWithPieceMessage()) {
 			System.out.println("Dealing with receipt of piece message from server.");
 			System.out.println("New length of filePieces: " + fileManager.getLengthOfFilePieces());
+			if (fileManager.getLengthOfFilePieces() == fileManager.getCapacityOfFilePieces()){
+				fileManager.reconstructFile();
+				while(true){}
+			}
 			setShouldDealWithPieceMessage(false);
 
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());

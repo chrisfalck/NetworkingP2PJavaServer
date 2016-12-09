@@ -184,19 +184,16 @@ public class FileManager {
 				filePiece[i] = wholeFile[locationInWholeFile];
 			}
 		}
-		
-//		for (byte character : filePieces[10]) {
-//			System.out.println((char)character + "");
-//		}
-//		
-//		for (int i = 0; i < bitfield.size(); i++) {
-//			System.out.print(bitfield.get(i) ? "1" : "0");
-//		}
+
 	}
 	
-	public void reconstructFile() throws IOException {
-		byte[] wholeFile = Bytes.concat(filePieces);
-		Files.write(wholeFile, thisPeerDataFile);
+	public void reconstructFile() {
+		try {
+			byte[] wholeFile = Bytes.concat(filePieces);
+			Files.write(wholeFile, thisPeerDataFile);
+		} catch (Exception e) {
+			System.out.println("Problem reconstructing file.");
+		}
 	}
 	
 	/**
@@ -220,6 +217,12 @@ public class FileManager {
 	public void addFilePiece(int index, byte[] content){
 		filePieces[index] = content;
 		bitfield.set(index);
+	}
+	
+	public int getCapacityOfFilePieces() {
+		int count = 0;
+		for (byte[] piece: filePieces) ++count;
+		return count;
 	}
 	
 	public int getLengthOfFilePieces() {
