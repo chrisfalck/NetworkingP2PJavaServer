@@ -34,6 +34,11 @@ public class PieceMessageHandler implements MessageHandler {
     	
     	byte[] filePieceIndexBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 0, 4);
     	int filePieceIndex = Ints.fromByteArray(filePieceIndexBytes);
+    	byte emtpy = 0;
+    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[0]));
+    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[1]));
+    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[2]));
+    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[3]));
     	
     	System.out.println("Received message index: " + filePieceIndex + " from server.");
 
