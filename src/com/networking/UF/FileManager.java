@@ -151,7 +151,10 @@ public class FileManager {
 		for (int i = 0; i < filePieces.length; ++i) {
 			if (i == (filePieces.length - 1)) filePieces[i] = new byte[lastFilePieceSize];
 			else filePieces[i] = new byte[(int)normalFilePieceSize];
+			Arrays.fill(filePieces[i], (byte)0);
 		}
+		
+		
 		
 		// If this peer doesn't have the source file, we're done.
 		if (!peerHasCompletedSourceFile) return;
@@ -222,7 +225,12 @@ public class FileManager {
 	public int getLengthOfFilePieces() {
 		int count = 0;
 		for (byte[] piece: filePieces) {
-			if (piece.length > 0) ++count;
+			for (byte part: piece) {
+				if ((int)part != 0) {
+					++count;
+					break;
+				}
+			}
 		}
 		return count;
 	}
