@@ -198,7 +198,7 @@ public class Client implements Runnable {
 		else if (!isChoked() && isInterested()) {
 			TimeUnit.SECONDS.sleep(1);
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
-			System.out.println("Building request message to send to server for piece: " + Ints.toByteArray(indexOfMissingPiece));
+			System.out.println("Building request message to send to server for piece: " + indexOfMissingPiece);
 			return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
 		}
 		
