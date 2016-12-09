@@ -36,13 +36,15 @@ public class PieceMessageHandler implements MessageHandler {
     	byte[] filePieceContent = messageCast.getPieceContent(filePiece);
     	
     	if(myClient != null) {
-    		myClient.setHasReceivedPiece(true);
+    		System.out.println("Client received file piece " + filePieceIndex + " from " + myClient.getServerPeerId());
+    		myClient.setShouldDealWithPieceMessage(true);
+
+    		// For use in the have message cascade. 
     		myClient.setCurrentHaveMessageIndexToSend(filePieceIndex);
+
     		fileManager.addFilePiece(Ints.fromByteArray(filePieceIndex), filePieceContent);
     	}
     	
-    	System.out.println("I got a file piece: " + filePieceContent.length);
-  
         return false;
     }
 

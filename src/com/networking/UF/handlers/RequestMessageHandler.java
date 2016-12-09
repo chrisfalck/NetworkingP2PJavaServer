@@ -37,6 +37,7 @@ public class RequestMessageHandler implements MessageHandler {
 	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
 			System.out.println("Server is handling request message: Index received " + result);
 	    	connectionState.setFileIndexToSendToClient(result);
+	    	connectionState.setNeedToRespondToClientRequestForPiece(true);
 	    	myServer.setClientConnectionState(peerId, connectionState);
 
     	}

@@ -249,6 +249,18 @@ public class Server implements Runnable {
 				}
 			}
 			
+			else if (connectionState.needToRespondToClientRequestForPiece()) {
+				System.out.println("Building a piece message to send to client");
+				connectionState.setNeedToRespondToClientRequestForPiece(false);
+				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
+
+				int fileIndex = connectionState.getFileIndexToSendToClient();
+				connectionState.setFileIndexToSendToClient(-1);
+
+				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
+				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));			
+			}
+			
 //			// If we have a file index we should send in response to a request message. 
 //			else if (connectionState.getFileIndexToSendToClient() != -1) {
 //				

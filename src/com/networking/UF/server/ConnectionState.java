@@ -18,6 +18,7 @@ public class ConnectionState {
 	private boolean needToUpdatePreferredNeighbors = false;
 	private boolean needToUpdateOptimisticNeighbor = false;
 	private boolean needToRespondToClientInterestedStatus = false;
+	private boolean needToRespondToClientRequestForPiece = false;
 	
 	public String toString() {
 		return new String("Connection state for peerId: " + peerId + "\n" +
@@ -122,5 +123,13 @@ public class ConnectionState {
 
 	public void setNeedToRespondToClientInterestedStatus(boolean needToRespondToClientInterestedStatus) {
 		this.needToRespondToClientInterestedStatus = needToRespondToClientInterestedStatus;
+	}
+
+	public boolean needToRespondToClientRequestForPiece() {
+		return needToRespondToClientRequestForPiece;
+	}
+
+	public void setNeedToRespondToClientRequestForPiece(boolean needToRespondToClientRequestForPiece) {
+		this.needToRespondToClientRequestForPiece = needToRespondToClientRequestForPiece;
 	}
 }

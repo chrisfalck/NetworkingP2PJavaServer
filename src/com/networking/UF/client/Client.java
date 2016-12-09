@@ -66,6 +66,16 @@ public class Client implements Runnable {
 	// Whether or not we should be waiting for a message from the server.
 	private boolean shouldWaitForMessage = false;
 	
+	// Whether we've received a piece message.
+	private boolean shouldDealWithPieceMessage = false;
+	
+	public boolean shouldDealWithPieceMessage() {
+		return shouldDealWithPieceMessage;
+	}
+	public void setShouldDealWithPieceMessage(boolean shouldDealWithPieceMessage) {
+		this.shouldDealWithPieceMessage = shouldDealWithPieceMessage;
+	}
+
 	private BitSet bitfieldOfServer = new BitSet();
 
 	public BitSet getBitfieldOfServer() {
@@ -101,6 +111,9 @@ public class Client implements Runnable {
 	public void setHaveReceivedHandshake(boolean haveReceivedHandshake) {
 		this.haveReceivedHandshake = haveReceivedHandshake;
 	}
+	public boolean isInterested() {
+		return interested;
+	}
 	public void setInterested(boolean interested) {
 		this.interested = interested;
 	}
@@ -112,6 +125,9 @@ public class Client implements Runnable {
 	}
 	public void setHasReceivedPiece(boolean haveReceivedPiece){
 		this.haveReceivedPiece = haveReceivedPiece;
+	}
+	public boolean isChoked() {
+		return isChoked;
 	}
 	public void setChoked(boolean isChoked){
 		this.isChoked = isChoked;
@@ -141,7 +157,6 @@ public class Client implements Runnable {
 		this.myPeer = myPeer;
 	}
 	
-	private boolean haveSentFirstInterestStatus = false;
 	
 	/**
 	 * Determines the next message the client should send by analysing the client's state variables. 
@@ -150,7 +165,6 @@ public class Client implements Runnable {
 	 * @throws InterruptedException
 	 */
 	private Message getNextMessageToSend() throws InterruptedException {
-		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + shouldWaitForMessage());
 		if (!haveReceivedHandshake()) {
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
@@ -162,9 +176,33 @@ public class Client implements Runnable {
 			return new RegularMessage(1 + bitfield.size(), MessageType.bitfield, bitfield.toByteArray());
 		} 
 		
-		else if (haveReceivedHandshake() && haveReceivedBitfield() && !haveSentFirstInterestStatus) {
-			haveSentFirstInterestStatus = true;
-			
+		// Decide if we should send another interested message or now send an uninterested message.
+		else if (shouldDealWithPieceMessage()) {
+			System.out.println("Dealing with receipt of piece message from server.");
+			setShouldDealWithPieceMessage(false);
+
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
+			// If the server has pieces we want, we send an interested message.
+			if (indexOfMissingPiece != -1) {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending an interested message");
+				return new RegularMessage(1, MessageType.interested, null);
+			} 
+			// Otherwise,  we send a not interested message.
+			else {
+				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending a not interested message.");
+				return new RegularMessage(1, MessageType.notInterested, null);
+			}
+		}
+		
+		// If we aren't choked and we are interested, send a request message for a file piece. 
+		else if (!isChoked() && isInterested()) {
+			System.out.println("Building request message to send to server.");
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
+			return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
+		}
+		
+		// Send either interested or uninterested messages to the server.
+		else if (haveReceivedHandshake() && haveReceivedBitfield()) {
 			// Determine if the server has a bitfiled with pieces not in our bitfield. 
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
 
