@@ -206,6 +206,7 @@ public class Client implements Runnable {
 			// Determine if the server has a bitfiled with pieces not in our bitfield. 
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
 
+			TimeUnit.SECONDS.sleep(10);
 			// If the server has pieces we want, we send an interested message.
 			if (indexOfMissingPiece != -1) {
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending an interested message");
