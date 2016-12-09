@@ -32,17 +32,12 @@ public class PieceMessageHandler implements MessageHandler {
     public boolean receiveMessage(Message message) {
     	RegularMessage messageCast = (RegularMessage)message;
     	
-    	byte[] filePieceIndexBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 0, 4);
+    	byte[] filePieceIndexBytes = new byte[]{messageCast.getMessagePayload()[1]};
     	int filePieceIndex = Ints.fromByteArray(filePieceIndexBytes);
-    	byte emtpy = 0;
-    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[0]));
-    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[1]));
-    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[2]));
-    	System.out.println(Ints.fromBytes(emtpy, emtpy, emtpy, messageCast.getMessagePayload()[3]));
     	
     	System.out.println("Received message index: " + filePieceIndex + " from server.");
 
-    	byte[] filePieceContentBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 4, messageCast.getMessagePayload().length);
+    	byte[] filePieceContentBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 2, messageCast.getMessagePayload().length);
     	
     	if(myClient != null) {
     		System.out.println("Client received file piece " + filePieceIndex + " from " + myClient.getServerPeerId());
