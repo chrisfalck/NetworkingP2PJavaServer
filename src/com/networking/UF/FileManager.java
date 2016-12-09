@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Random;
 
 import javax.lang.model.element.VariableElement;
 import javax.xml.bind.annotation.adapters.NormalizedStringAdapter;
@@ -186,7 +187,7 @@ public class FileManager {
 		}
 
 	}
-	
+		
 	public void reconstructFile() {
 		try {
 			byte[] wholeFile = Bytes.concat(filePieces);
@@ -213,6 +214,23 @@ public class FileManager {
 			System.out.println("Config files found.");
 		}
 	} 
+	
+	public int getRandomFilePieceNeeded() {
+		ArrayList<Integer> neededPieceIndices = new ArrayList<Integer>();
+		int index = 0;
+		for (byte[] piece: filePieces) {
+			for (byte part: piece) {
+				if ((int)part == 0) {
+					neededPieceIndices.add(index);
+					break;
+				}
+			}
+			++index;
+		}
+		
+		Random random = new Random();
+		return neededPieceIndices.get(random.nextInt(neededPieceIndices.size()));
+	}
 	
 	public void addFilePiece(int index, byte[] content){
 		filePieces[index] = content;
