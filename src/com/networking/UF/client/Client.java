@@ -179,6 +179,7 @@ public class Client implements Runnable {
 		// Decide if we should send another interested message or now send an uninterested message.
 		else if (shouldDealWithPieceMessage()) {
 			System.out.println("Dealing with receipt of piece message from server.");
+			System.out.println("New length of filePieces: " + fileManager.getLengthOfFilePieces());
 			setShouldDealWithPieceMessage(false);
 
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
@@ -196,7 +197,6 @@ public class Client implements Runnable {
 		
 		// If we aren't choked and we are interested, send a request message for a file piece. 
 		else if (!isChoked() && isInterested()) {
-			TimeUnit.SECONDS.sleep(1);
 			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
 			System.out.println("Building request message to send to server for piece: " + indexOfMissingPiece);
 			return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));

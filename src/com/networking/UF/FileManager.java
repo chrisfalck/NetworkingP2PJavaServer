@@ -218,6 +218,14 @@ public class FileManager {
 		filePieces[index] = content;
 		bitfield.set(index);
 	}
+	
+	public int getLengthOfFilePieces() {
+		int count = 0;
+		for (byte[] piece: filePieces) {
+			if (piece.length > 0) ++count;
+		}
+		return count;
+	}
 
 	public byte[] getFilePieceAtIndex(int index) {
 		return filePieces[index];
