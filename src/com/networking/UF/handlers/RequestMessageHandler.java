@@ -30,13 +30,12 @@ public class RequestMessageHandler implements MessageHandler {
     	
     	if(myServer != null){
 
-	    	BitSet filePiece = BitSet.valueOf(messageCast.getMessagePayload());
-	    	byte[] filePieceIndex = (messageCast.getPieceIndex(filePiece));
-	    	int result = Ints.fromByteArray(filePieceIndex);
+	    	
+	    	int filePieceIndex = Ints.fromByteArray(messageCast.getMessagePayload());
 	    	
 	    	ConnectionState connectionState = myServer.getClientConnectionState(peerId);
-			System.out.println("Server is handling request message: Index received " + result);
-	    	connectionState.setFileIndexToSendToClient(result);
+			System.out.println("Server is handling request message: Index received " + filePieceIndex);
+	    	connectionState.setFileIndexToSendToClient(filePieceIndex);
 	    	connectionState.setNeedToRespondToClientRequestForPiece(true);
 	    	myServer.setClientConnectionState(peerId, connectionState);
 
