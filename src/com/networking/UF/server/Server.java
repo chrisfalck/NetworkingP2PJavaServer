@@ -246,7 +246,7 @@ public class Server implements Runnable {
 				int fileIndex = connectionState.getFileIndexToSendToClient();
 				connectionState.setFileIndexToSendToClient(-1);
 
-				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
+				int messageLengthFTS = 1 + 4 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
 				byte[] pieceMessagePayload = Bytes.concat(Ints.toByteArray(fileIndex), fileManager.getFilePieceAtIndex(fileIndex));
 				return new RegularMessage(messageLengthFTS, MessageType.piece, pieceMessagePayload);			
 			}
