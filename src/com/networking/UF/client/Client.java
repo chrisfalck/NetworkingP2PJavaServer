@@ -211,11 +211,13 @@ public class Client implements Runnable {
 			// If the server has pieces we want, we send an interested message.
 			if (indexOfMissingPiece != -1) {
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending an interested message");
+				setInterested(true);
 				return new RegularMessage(1, MessageType.interested, null);
 			} 
 			// Otherwise,  we send a not interested message.
 			else {
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending a not interested message.");
+				setInterested(false);
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
 		} 
