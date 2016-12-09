@@ -34,6 +34,8 @@ public class PieceMessageHandler implements MessageHandler {
     	
     	byte[] filePieceIndexBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 0, 4);
     	int filePieceIndex = Ints.fromByteArray(filePieceIndexBytes);
+    	
+    	System.out.println("Received message index: " + filePieceIndex + " from server.");
 
     	byte[] filePieceContentBytes = Arrays.copyOfRange(messageCast.getMessagePayload(), 4, messageCast.getMessagePayload().length);
     	
@@ -45,6 +47,8 @@ public class PieceMessageHandler implements MessageHandler {
     		myClient.setCurrentHaveMessageIndexToSend(filePieceIndexBytes);
 
     		fileManager.addFilePiece(filePieceIndex, filePieceContentBytes);
+    		System.out.println("New length of file piece at index " + filePieceIndex + 
+    		" is: " + fileManager.getFilePieceAtIndex(filePieceIndex).length);
     	}
     	
         return false;
