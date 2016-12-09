@@ -192,8 +192,6 @@ public class Server implements Runnable {
 		// The P2PProtocol created for use by this Handler thread. 
 		private P2PProtocol p2pProtocol;
 		
-		private boolean haveSentBitfield = false;
-		
 		public boolean shouldWaitForMessagesFromClient = true;
 		public boolean shouldWaitForMessagesFromClient() {
 			return shouldWaitForMessagesFromClient;
@@ -218,22 +216,24 @@ public class Server implements Runnable {
 		private Message getNextMessageToSend() throws InterruptedException {
 			ConnectionState connectionState = myServer.getClientConnectionState(p2pProtocol.getConnectedPeerId());
 			
-			// If we haven't send a handshake message. 
 			if (!connectionState.haveSentHandshakeToClient()) {
-				// Send Handshake
 				System.out.println("Building handshake message to send to client.");
+
+				connectionState.setHaveSentHandshakeToClient(true);
+				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
+
 				return new HandshakeMessage(fileManager.getThisPeerIdentifier());
 			}
 			
-//			// If we haven't send a bitfield message. 
-//			else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveSentBitfield) {
-//				System.out.println("Building bitfield message to send to client.");
-//				BitSet bitfield = fileManager.getBitfield();
-//				int messageLength = 1 + bitfield.toByteArray().length;
-//				RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-//				haveSentBitfield = true;
-//				return bitfieldMessage;
-//			} 
+			else if (connectionState.haveSentHandshakeToClient() && !connectionState.haveSentBitfieldToClient()) {
+				System.out.println("Building bitfield message to send to client.");
+				
+				connectionState.setHaveSentBitfieldToClient(true);
+				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
+				
+				BitSet bitfield = fileManager.getBitfield();
+				return new RegularMessage(1 + bitfield.toByteArray().length, MessageType.bitfield, bitfield.toByteArray());
+			} 
 //			
 //			// If we have a file index we should send in response to a request message. 
 //			else if (connectionState.getFileIndexToSend() != -1) {

@@ -38,6 +38,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 		// Server handler.
 		if (myClient != null) {
 			myClient.setHaveReceivedHandshake(true);
+			System.out.println("Client handled a handshake message from server on peer " + messageCast.getPeerId());
 		} else if (myServer != null){
 			ConnectionState connectionState = myServer.getClientConnectionState(messageCast.getPeerId());
 
@@ -47,6 +48,7 @@ public class HandshakeMessageHandler implements MessageHandler {
 			}
 
 			myServer.setClientConnectionState(messageCast.getPeerId(), connectionState);
+			System.out.println("Server handled a handshake message from client on peer " + messageCast.getPeerId());
 		} else {
 			System.err.println("The handler needs a valid server or client to edit state information.");
 		}

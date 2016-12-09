@@ -104,6 +104,9 @@ public class Client implements Runnable {
 	public void setInterested(boolean interested) {
 		this.interested = interested;
 	}
+	public boolean haveReceivedBitfield() {
+		return this.haveReceivedBitfield;
+	}
 	public void setHaveReceivedBitfield(boolean haveReceivedBitfield) {
 		this.haveReceivedBitfield = haveReceivedBitfield;
 	}
@@ -113,7 +116,7 @@ public class Client implements Runnable {
 	public void setChoked(boolean isChoked){
 		this.isChoked = isChoked;
 	}
-	public void setDownloadSpeed(long downloadSpeed) {
+	public void setDownloadSpeedFromServer(long downloadSpeed) {
 		this.downloadSpeed = downloadSpeed;
 	}
 
@@ -147,21 +150,15 @@ public class Client implements Runnable {
 	private Message getNextMessageToSend() throws InterruptedException {
 		System.out.println("Client " + fileManager.getThisPeerIdentifier() + " waiting status: " + shouldWaitForMessage());
 		if (!haveReceivedHandshake()) {
-			// Send Handshake
 			System.out.println("Building handshake message to send to server.");
 			return new HandshakeMessage(fileManager.getThisPeerIdentifier());
-
 		} 
-//		
-//		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
-//			// Send Bitfield
-//			System.out.println("Building bitfield message to send to server.");
-//			BitSet bitfield = fileManager.getBitfield();
-//			int messageLength = 1 + bitfield.size();
-//			RegularMessage bitfieldMessage = new RegularMessage(messageLength, MessageType.bitfield, bitfield.toByteArray());
-//			return bitfieldMessage;
-//
-//		} 
+		
+		else if (haveReceivedHandshake() && !haveReceivedBitfield()) {
+			System.out.println("Building bitfield message to send to server.");
+			BitSet bitfield = fileManager.getBitfield();
+			return new RegularMessage(1 + bitfield.size(), MessageType.bitfield, bitfield.toByteArray());
+		} 
 //		
 //		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveHandledBitfieldMessage) {
 //			haveHandledBitfieldMessage = true;

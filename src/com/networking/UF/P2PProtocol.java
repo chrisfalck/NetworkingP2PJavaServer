@@ -84,17 +84,15 @@ public class P2PProtocol implements Protocol {
 		rawReceivedMessage = (byte[])in.readObject();
 		Long endTime = System.nanoTime();
 		if (myClient != null) {
-			myClient.setDownloadSpeed(rawReceivedMessage.length / (endTime - startTime)); // bytes / nanosecond
+			myClient.setDownloadSpeedFromServer(rawReceivedMessage.length / (endTime - startTime)); // bytes / nanosecond
 		}
 
 		
 		if (origin.equals("server")) System.out.println("\n\n\nStart-Server----------------------------------------------------------------------");
 
 		if (origin.equals("client")) {
-
 			System.out.println("Received message from server: " + connectedPeerId);
-		} 
-		else {
+		} else {
 			System.out.println("Received message from client: " + connectedPeerId);
 		}
 
@@ -114,11 +112,11 @@ public class P2PProtocol implements Protocol {
 
 			if (origin.equals("client")) {
 				// If the rawReceivedMessage is null, we are sending a message from a client object.
-				System.out.println("Sending message to server: " + connectedPeerId);
+				System.out.println("Sending message to server on peer " + connectedPeerId);
 				out.writeObject(messageToSend.toByteArray());
 			} else {
 				// If rawReceivedMessage contains information, we are sending a message from a server object.
-				System.out.println("Sending message to server: " + connectedPeerId);
+				System.out.println("Sending message to server on peer " + connectedPeerId);
 				out.writeObject(messageToSend.toByteArray());
 			}
 
@@ -173,8 +171,6 @@ public class P2PProtocol implements Protocol {
 		byte[] messagePayload = Arrays.copyOfRange(rawReceivedMessage, regularHeader, rawReceivedMessage.length);
 		RegularMessage regularMessage = new RegularMessage(messageLength, regularHeader, messagePayload);
 		
-		System.out.println("Message type in p2p is: " + regularHeader);
-
 		// Otherwise see what kind of message it is. 
 		switch (regularHeader) {
 		// Choke.
