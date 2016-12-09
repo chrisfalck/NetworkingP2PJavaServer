@@ -236,6 +236,18 @@ public class Server implements Runnable {
 				return new RegularMessage(1 + bitfield.toByteArray().length, MessageType.bitfield, bitfield.toByteArray());
 			} 
 			
+			else if (connectionState.needToRespondToClientRequestForPiece()) {
+				System.out.println("Building a piece message to send to client");
+				connectionState.setNeedToRespondToClientRequestForPiece(false);
+				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
+
+				int fileIndex = connectionState.getFileIndexToSendToClient();
+				connectionState.setFileIndexToSendToClient(-1);
+
+				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
+				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));			
+			}
+			
 			else if (connectionState.needToRespondToClientInterestedStatus()) {
 				connectionState.setNeedToRespondToClientInterestedStatus(false);
 				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
@@ -247,18 +259,6 @@ public class Server implements Runnable {
 					System.out.println("Building unchoke message to send to client.");
 					return new RegularMessage(1, MessageType.unchoke, null);
 				}
-			}
-			
-			else if (connectionState.needToRespondToClientRequestForPiece()) {
-				System.out.println("Building a piece message to send to client");
-				connectionState.setNeedToRespondToClientRequestForPiece(false);
-				myServer.setClientConnectionState(p2pProtocol.getConnectedPeerId(), connectionState);
-
-				int fileIndex = connectionState.getFileIndexToSendToClient();
-				connectionState.setFileIndexToSendToClient(-1);
-
-				int messageLengthFTS = 1 + (fileManager.getFilePieceAtIndex(fileIndex)).length;
-				return new RegularMessage(messageLengthFTS, MessageType.piece, fileManager.getFilePieceAtIndex(fileIndex));			
 			}
 			
 //			// If we have a file index we should send in response to a request message. 
