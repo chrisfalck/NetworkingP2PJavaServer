@@ -186,8 +186,8 @@ public class Client implements Runnable {
 			}
 			setShouldDealWithPieceMessage(false);
 
-//			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
-			int indexOfMissingPiece = fileManager.getRandomFilePieceNeeded();
+			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), getBitfieldOfServer());
+
 			// If the server has pieces we want, we send an interested message.
 			if (indexOfMissingPiece != -1) {
 				System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is sending an interested message");
@@ -226,81 +226,12 @@ public class Client implements Runnable {
 				setInterested(false);
 				return new RegularMessage(1, MessageType.notInterested, null);
 			}
-		} 
-		
-//		// This spcific client received a full piece, so we should tell the Peer the tell all other clients to send have messages. 
-//		else if (connectionState.hasReceivedPiece() == true) {
-//			System.out.println("Peer has received piece...client preparing to send Have message.");
-//			myPeer.broadcastShouldSendHaveMessages(currentHaveMessageIndexToSend);
-//			shouldSendHaveMessage = false;
-//			connectionState.setHasReceivedPiece(false);
-//			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-//		} 
-//		
-//		// A have message was received by some Client on this Peer so we should also send a have message. 
-//		else if (shouldSendHaveMessage) {
-//			shouldSendHaveMessage = false;
-//			return new RegularMessage(1 + currentHaveMessageIndexToSend.length, MessageType.have, currentHaveMessageIndexToSend);
-//		} 
-//		
-//		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == true) {
-//			// Send request messages until choked
-//			int indexOfMissingPiece = BitfieldUtils.compareBitfields(fileManager.getBitfield(), connectionState.getBitfield());
-//			System.out.println("index of missing piece is: " + indexOfMissingPiece);
-//			if (indexOfMissingPiece == -1) {
-//				connectionState.setInterested(false);
-//				System.out.println("Not interested in any file pieces from " + this.serverAddress);
-//				return new RegularMessage(1, MessageType.notInterested, null);
-//			} else {
-//				System.out.println("Interested in a file piece from " + this.serverAddress);
-//				return new RegularMessage(1 + 4, MessageType.request, Ints.toByteArray(indexOfMissingPiece));
-//			}
-//		} 
-//		
-//		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == false) {
-//			// Wait until unchoked to send more request messages
-//			System.out.println("Client " + fileManager.getThisPeerIdentifier() + " is choked and waiting to be unchoked");
-//		}
-		else {
+		} else {
 			System.out.println("Waiting for further implementation.");
 			while(true) {}
 		}
 	}
 	
-//	private void clientShouldBeWaitingForMessages() {
-//
-//		if (!connectionState.haveReceivedHandshake()) {
-//			connectionState.setWaiting(false);
-//		}
-//
-//		else if (connectionState.haveReceivedHandshake() && !connectionState.haveReceivedBitfield()) {
-//			connectionState.setWaiting(false);
-//		}
-//
-//		else if (connectionState.haveReceivedHandshake() && connectionState.haveReceivedBitfield() && !haveHandledBitfieldMessage) {
-//			connectionState.setWaiting(false);
-//		}
-//		
-//		else if (connectionState.hasReceivedPiece() == true) {
-//			connectionState.setWaiting(false);
-//		}
-//		
-//		else if (shouldSendHaveMessage) {
-//			connectionState.setWaiting(false);
-//		}
-//		
-//		else if (/*connectionState.isInterested() == true &&*/connectionState.isChoked() == false || connectionState.isOptimisticallyUnchoked() == false) {
-//			connectionState.setWaiting(true);
-//		}
-//
-//		else if (connectionState.isChoked() == true && connectionState.isOptimisticallyUnchoked() == true) {
-//			connectionState.setWaiting(false);
-//		}
-//
-//		else 
-//			connectionState.setWaiting(false);
-//	}
-
 	public void run()
 	{
 		try{
@@ -328,32 +259,6 @@ public class Client implements Runnable {
 				p2pProtocol.sendMessage(out, messageToSend);
 				p2pProtocol.receiveMessage(in);
 
-//				// If we haven't completed a handshake or should be waiting for messages. 
-//				if (this.connectionState != null && this.connectionState.isWaiting()) {
-//					System.out.println("Client is in waiting state.");
-//
-//					p2pProtocol.receiveMessage(in);
-//
-//					Message messageToSend = getNextMessageToSend();
-//
-//
-//					p2pProtocol.sendMessage(out, messageToSend);
-//
-//				} 
-//				
-//				// We have completed a handshake and should not be waiting for messages.
-//				else {
-//					System.out.println("Client is in sending state.");
-//
-//					Message messageToSend = getNextMessageToSend();
-//					System.out.println("Sending message to server peer " + this.serverPeerId + " from client " + fileManager.getThisPeerIdentifier() + "\n");
-//
-//					if (messageToSend != null) {
-//						p2pProtocol.sendMessage(out, messageToSend);
-//						p2pProtocol.receiveMessage(in);
-//					} 
-//				}
-
 				System.out.println("End-Client----------------------------------------------------------------------------\n\n\n");
 			}
 		}
@@ -362,7 +267,6 @@ public class Client implements Runnable {
 			e.printStackTrace();
 		}
 		finally{
-			//Close connections
 			try{
 				in.close();
 				out.close();

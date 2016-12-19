@@ -17,11 +17,10 @@ public class peerProcess {
     	int peerId;
 
         if (args.length == 0) {
-//        	System.out.println("Enter the peer id for this computer:");
-//        	Scanner scanner = new Scanner(System.in);
-//        	peerId = scanner.nextInt();
-//        	scanner.close();
-        	peerId = 1002;
+            System.out.println("Enter the peer id for this computer:");
+            Scanner scanner = new Scanner(System.in);
+            peerId = scanner.nextInt();
+            scanner.close();
         } else {
         	peerId = Integer.parseInt(args[0]);
         }

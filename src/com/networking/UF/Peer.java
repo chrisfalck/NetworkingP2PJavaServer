@@ -34,17 +34,6 @@ public class Peer {
 		myClients = new ArrayList<Client>();
     }
 
-	/**
-	 * WARNING: The values of the hashmap this method returns are ConnectionStates for the clients this Peer has spun threads for
-	 *          The keys are the peerIDs of the servers those clients are connected to
-	 */
-//	public ConcurrentHashMap<Integer,ConnectionState> getThisPeersClientConnectionStates() {
-//		ConcurrentHashMap<Integer,ConnectionState> thisPeersClientConnectionStates = new ConcurrentHashMap<Integer,ConnectionState>();
-//		for (Client client: myClients) {
-//			thisPeersClientConnectionStates.put(client.getServerPeerId(), client.getConnectionState());
-//		}
-//		return thisPeersClientConnectionStates;
-//	}
 
 	/**
 	 * Currently only used for testing

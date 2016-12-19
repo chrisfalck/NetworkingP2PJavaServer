@@ -1,34 +1,8 @@
-General timeline for P2P file sharing operation. 
-The numbers roughly correspond to what the client and serve
---------------------------------------------------
-FileManager: Make sure all files and directories exist. 
-			 Create initial bit field and file pieces.
-			 If the peer info config indicates this peer has the file, 
-			 	set the bit field and file pieces appropriately.
-
-Peer: Start server thread with indicated port number.
-	  Send a client thread to each peer indicated on the peer info config excluding the current peer. 
-
-Client: Each client for this peer sends a handshake message to the server it was instantiated with.
-Server: Upon receiving a handshake message from a client, the server instantiates a connection state object
-		to track that client's connection state with this server. Each client that connects to the server will
-		be assigned a connection state object retrievable by peer id. 
-		The server then sends a handshake message back to the client. 
-
-Client: When the client receives a return handshake message from the server, it records that a handshake has
-		been completed successfully by updating a state variable. 
-Server: Waits for bitfield message.
-
-Client: Having completed the handshake, the client sends a bitfield message to the server.
-Server: The server receives the bitfield message and updates the client's connection state object. 
-		The server then sends a return bitfield message to the client. 
-		
-Client: After receiving the bitfield message from the server, the client compares bitfields, and sends either an interested
-		or not interested message. 
-Server: The server sees if the client is unchoked or choked. The choked or unchoked state of a client is determined every 
-		n seconds of the unchoking interval. 
-		If the client is unchoked, the server sends an interested message. 
-		If the client is choked, the server sends a not interested message. 
-		
-		
-		
+Unfortunately, we ran our of time on the project, and it's only partially
+complete. There are plenty of organizational changes we'd like to make but
+didn't have time to implement. I'm going to leave this up for now, and maybe
+return to finish the unimplemented features in the future. Right now, this
+essentially acts as a file server, by breaking a file into pieces and then 
+distributing it to client threads on other computers that reconstruct the 
+file upon receiving all pieces. Some P2P protocol is followed prior to the 
+file transfer, but some still needs to be written/fixed.
